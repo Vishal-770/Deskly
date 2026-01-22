@@ -36,7 +36,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          
           <TitleBar />
 
           {children}

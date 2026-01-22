@@ -1,5 +1,7 @@
 "use client";
 
+import { BarChart3 } from "lucide-react";
+
 declare global {
   interface Window {
     electron?: {
@@ -26,11 +28,12 @@ export default function TitleBar() {
   };
 
   return (
-    <div className="fixed top-0 left-0 z-50 flex h-8 w-full items-center justify-between bg-zinc-900 text-white select-none">
+    <div className="fixed top-0 left-0 z-50 flex h-8 w-full items-center justify-between bg-card text-card-foreground select-none shadow-lg border-b border-border/50">
       <div
-        className="flex-1 px-3 text-sm"
+        className="flex-1 px-4 text-sm font-medium flex items-center"
         style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
       >
+        <BarChart3 className="w-4 h-4 mr-2 text-primary" />
         Deskly
       </div>
       <div
@@ -39,7 +42,7 @@ export default function TitleBar() {
       >
         <button
           onClick={handleMinimize}
-          className="h-8 w-12 hover:bg-zinc-700 flex items-center justify-center transition-colors"
+          className="h-8 w-12 hover:bg-muted flex items-center justify-center transition-all duration-200 hover:scale-105"
           aria-label="Minimize"
         >
           <svg width="10" height="1" viewBox="0 0 10 1" fill="currentColor">
@@ -48,7 +51,7 @@ export default function TitleBar() {
         </button>
         <button
           onClick={handleMaximize}
-          className="h-8 w-12 hover:bg-zinc-700 flex items-center justify-center transition-colors"
+          className="h-8 w-12 hover:bg-muted flex items-center justify-center transition-all duration-200 hover:scale-105"
           aria-label="Maximize"
         >
           <svg
@@ -63,7 +66,7 @@ export default function TitleBar() {
         </button>
         <button
           onClick={handleClose}
-          className="h-8 w-12 hover:bg-red-600 flex items-center justify-center transition-colors"
+          className="h-8 w-12 hover:bg-destructive/90 flex items-center justify-center transition-all duration-200 hover:scale-105"
           aria-label="Close"
         >
           <svg
