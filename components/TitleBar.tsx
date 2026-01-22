@@ -28,7 +28,7 @@ export default function TitleBar() {
   };
 
   return (
-    <div className="fixed top-0 left-0 z-50 flex h-8 w-full items-center justify-between bg-card text-card-foreground select-none shadow-lg border-b border-border/50">
+    <div className="fixed top-0 left-0 z-50 flex h-8 w-full items-center justify-between bg-card text-card-foreground select-none border-b border-border/50">
       <div
         className="flex-1 px-4 text-sm font-medium flex items-center"
         style={{ WebkitAppRegion: "drag" } as React.CSSProperties}

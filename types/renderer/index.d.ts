@@ -31,5 +31,11 @@ declare global {
         error?: string;
       }>;
     };
+    auth: {
+      login(data: { userId: string; password: string }): Promise<boolean>;
+      autoLogin(): Promise<{ userId: string } | null>;
+      logout(): Promise<boolean>;
+      get(): Promise<{ userId: string } | null>;
+    };
   }
 }

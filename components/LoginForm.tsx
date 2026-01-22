@@ -15,12 +15,35 @@ export const LoginForm: React.FC = () => {
     setMessage("Logging in...");
 
     try {
+      /** CALL LOGIN IPC  */
       const result = await window.system.login({ username, password });
+
       if (result.success) {
         // Store cookies, authorizedID, and csrf for dashboard to use
         sessionStorage.setItem("vtp_cookies", result.cookies || "");
         sessionStorage.setItem("vtp_authorizedID", result.authorizedID || "");
         sessionStorage.setItem("vtp_csrf", result.csrf || "");
+
+        /**
+         * SET AUTH STATE IN STORE
+         *
+         */
+        const response: boolean = await window.auth.login({
+          userId: username,
+          password,
+        });
+
+        /** CHECK IF AUTH STATE IS SET PROPERLY  else login failed*/
+
+        if (response === false) {
+          throw new Error("Authentication storage failed.");
+        }
+
+        /** REDIRECT TO DASHBOARD
+         * IF LOGIN AND AUTH STORAGE SUCCESSFUL
+         *
+         */
+
         router.push("/dashboard");
       } else {
         setMessage(result.error || "Login failed");

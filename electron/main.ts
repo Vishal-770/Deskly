@@ -8,9 +8,21 @@ import {
 import * as path from "path";
 import * as url from "url";
 import * as fs from "fs";
+
+/*******
+ * IPC IMPORTS
+ *
+ */
+
 import "./ipc/system.ipc";
 import "./ipc/login.ipc";
 import "./ipc/content.ipc";
+import "./ipc/auth.ipc";
+
+/*******
+ * END IPC IMPORTS 
+ * 
+ */
 
 const isDev = process.env.NODE_ENV === "development";
 

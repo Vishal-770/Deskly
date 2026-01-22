@@ -55,3 +55,12 @@ contextBridge.exposeInMainWorld("system", {
     ipcRenderer.on("cpu:update", (_, cpu) => callback(cpu));
   },
 });
+
+contextBridge.exposeInMainWorld("auth", {
+  login: (data: { userId: string; password: string }): Promise<boolean> =>
+    ipcRenderer.invoke("auth:login", data),
+  autoLogin: (): Promise<{ userId: string } | null> =>
+    ipcRenderer.invoke("auth:autoLogin"),
+  logout: (): Promise<boolean> => ipcRenderer.invoke("auth:logout"),
+  get: (): Promise<{ userId: string } | null> => ipcRenderer.invoke("auth:get"),
+});
