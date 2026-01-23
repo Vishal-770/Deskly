@@ -19,23 +19,23 @@ declare global {
         csrf?: string;
         authorizedID?: string;
       }>;
+      logout: (body: {
+        cookies: string;
+        authorizedID: string;
+        csrf: string;
+      }) => Promise<{
+        success: boolean;
+        error?: string;
+      }>;
     };
     content: {
-      fetch: (
-        cookies: string,
-        authorizedID?: string,
-        csrf?: string,
-      ) => Promise<{
+      fetch: () => Promise<{
         success: boolean;
         courses?: Course[];
         semester?: string;
         error?: string;
       }>;
-      cgpa: (
-        cookies: string,
-        authorizedID?: string,
-        csrf?: string,
-      ) => Promise<{
+      cgpa: () => Promise<{
         success: boolean;
         cgpaData?: CGPAData;
         error?: string;

@@ -41,6 +41,15 @@ export const useAuth = () => {
   const logout = async () => {
     try {
       setLoading(true);
+      // Get the tokens from electron store
+      const tokens = await getAuthTokens();
+      if (tokens) {
+        await window.login.logout({
+          cookies: tokens.cookies,
+          authorizedID: tokens.authorizedID,
+          csrf: tokens.csrf,
+        });
+      }
       await window.auth.logout();
       setAuthState(null);
       // Clear any stored auth data

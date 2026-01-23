@@ -27,6 +27,14 @@ contextBridge.exposeInMainWorld("login", {
     csrf?: string;
     authorizedID?: string;
   }> => ipcRenderer.invoke("login:authenticate", body),
+  logout: (body: {
+    cookies: string;
+    authorizedID: string;
+    csrf: string;
+  }): Promise<{
+    success: boolean;
+    error?: string;
+  }> => ipcRenderer.invoke("logout:perform", body),
 });
 
 contextBridge.exposeInMainWorld("content", {

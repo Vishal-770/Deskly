@@ -79,20 +79,7 @@ export default function Dashboard() {
           return;
         }
 
-        const cookies = sessionStorage.getItem("vtp_cookies");
-        const authorizedID = sessionStorage.getItem("vtp_authorizedID");
-        const csrf = sessionStorage.getItem("vtp_csrf");
-        console.log("Fetching dashboard with cookies:", cookies);
-        if (!cookies) {
-          setError("No authentication cookies found. Please log in.");
-          return;
-        }
-
-        const content = await window.content.fetch(
-          cookies,
-          authorizedID || undefined,
-          csrf || undefined,
-        );
+        const content = await window.content.fetch();
 
         if (content?.success) {
           setCourses(content.courses ?? []);
@@ -101,11 +88,7 @@ export default function Dashboard() {
           setError(content?.error || "Failed to fetch course content");
         }
 
-        const cgpa = await window.content.cgpa(
-          cookies,
-          authorizedID || undefined,
-          csrf || undefined,
-        );
+        const cgpa = await window.content.cgpa();
 
         if (cgpa?.success && cgpa.cgpaData) {
           setCgpaData(cgpa.cgpaData);

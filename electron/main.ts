@@ -16,12 +16,13 @@ import * as fs from "fs";
 
 import "./ipc/system.ipc";
 import "./ipc/login.ipc";
+import "./ipc/logout.ipc";
 import "./ipc/content.ipc";
 import "./ipc/auth.ipc";
 
 /*******
- * END IPC IMPORTS 
- * 
+ * END IPC IMPORTS
+ *
  */
 
 const isDev = process.env.NODE_ENV === "development";

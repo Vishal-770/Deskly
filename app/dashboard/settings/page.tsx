@@ -1,14 +1,22 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/useAuth";
+import { get } from "http";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 const SettingPage = () => {
-  const { authState, loading: authLoading, logout } = useAuth();
+  const { authState, loading: authLoading, logout, getAuthTokens } = useAuth();
   const router = useRouter();
   const [logoutLoading, setLogoutLoading] = useState(false);
-
+  const [tokens, setTokens] = useState(null);
+  useEffect(() => {
+    const fetchTokens = async () => {
+      const t = await getAuthTokens();
+      setTokens(t);
+    };
+    fetchTokens();
+  }, [getAuthTokens]);
   useEffect(() => {
     if (!authLoading && !authState) {
       router.push("/");
@@ -90,6 +98,7 @@ const SettingPage = () => {
             Once you logout, you&apos;ll need to sign in again to access your
             account.
           </p>
+          <p>{JSON.stringify(tokens)}</p>
           <Button
             onClick={handleLogout}
             disabled={logoutLoading}
