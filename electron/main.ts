@@ -20,6 +20,7 @@ import "./ipc/logout.ipc";
 import "./ipc/content.ipc";
 import "./ipc/getUserImage.ipc";
 import "./ipc/auth.ipc";
+import "./ipc/profile.ipc";
 
 /*******
  * END IPC IMPORTS

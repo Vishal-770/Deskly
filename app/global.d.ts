@@ -55,6 +55,17 @@ declare global {
         error?: string;
       }>;
     };
+    profile: {
+      get: (
+        cookies: string,
+        authorizedID: string,
+        csrf: string,
+      ) => Promise<{
+        success: boolean;
+        html?: string;
+        error?: string;
+      }>;
+    };
     system: {
       stats: () => Promise<SystemStats>;
       onCpuUpdate: (cb: (cpu: number) => void) => void;

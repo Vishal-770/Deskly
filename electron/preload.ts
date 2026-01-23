@@ -73,6 +73,19 @@ contextBridge.exposeInMainWorld("content", {
   }> => ipcRenderer.invoke("userImage:fetch"),
 });
 
+contextBridge.exposeInMainWorld("profile", {
+  get: (
+    cookies: string,
+    authorizedID: string,
+    csrf: string,
+  ): Promise<{
+    success: boolean;
+    data?: any;
+    html?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("profile:get", { cookies, authorizedID, csrf }),
+});
+
 contextBridge.exposeInMainWorld("system", {
   stats: (): Promise<SystemStats> => ipcRenderer.invoke("system:stats"),
 
