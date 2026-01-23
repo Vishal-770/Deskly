@@ -14,6 +14,12 @@ export const useAuth = () => {
 
   const fetchAuthState = async () => {
     try {
+      if (!window.auth) {
+        console.error("window.auth is not available");
+        setAuthState(null);
+        setLoading(false);
+        return;
+      }
       const state = await window.auth.get();
       setAuthState(state);
     } catch (error) {

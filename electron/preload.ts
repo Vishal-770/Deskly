@@ -1,10 +1,25 @@
+import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
 import { contextBridge, ipcRenderer } from "electron";
-import type { SystemStats, CGPAData } from "../types/electron/system.types";
 
 type SetAuthTokensPayload = {
   authorizedID: string;
   csrf: string;
   cookies: string;
+};
+
+type CGPAData = {
+  totalCreditsRequired: number;
+  earnedCredits: number;
+  currentCGPA: number;
+  nonGradedCore: number;
+};
+
+type SystemStats = {
+  cpu: number;
+  memory: {
+    used: number;
+    total: number;
+  };
 };
 
 contextBridge.exposeInMainWorld("electron", {
@@ -86,6 +101,14 @@ contextBridge.exposeInMainWorld("profile", {
   }> => ipcRenderer.invoke("profile:get", { cookies, authorizedID, csrf }),
 });
 
+contextBridge.exposeInMainWorld("grade", {
+  getExamGradeView: (): Promise<{
+    success: boolean;
+    data?: StudentHistoryData;
+    error?: string;
+  }> => ipcRenderer.invoke("grade:getExamGradeView"),
+});
+
 contextBridge.exposeInMainWorld("system", {
   stats: (): Promise<SystemStats> => ipcRenderer.invoke("system:stats"),
 
@@ -97,10 +120,17 @@ contextBridge.exposeInMainWorld("system", {
 contextBridge.exposeInMainWorld("auth", {
   login: (data: { userId: string; password: string }): Promise<boolean> =>
     ipcRenderer.invoke("auth:login", data),
-  autoLogin: (): Promise<{ userId: string } | null> =>
-    ipcRenderer.invoke("auth:autoLogin"),
+  autoLogin: (): Promise<{
+    userId: string;
+    loggedIn: boolean;
+    lastLogin: number;
+  } | null> => ipcRenderer.invoke("auth:autoLogin"),
   logout: (): Promise<boolean> => ipcRenderer.invoke("auth:logout"),
-  get: (): Promise<{ userId: string } | null> => ipcRenderer.invoke("auth:get"),
+  get: (): Promise<{
+    userId: string;
+    loggedIn: boolean;
+    lastLogin: number;
+  } | null> => ipcRenderer.invoke("auth:get"),
   setTokens: (data: SetAuthTokensPayload): Promise<boolean> =>
     ipcRenderer.invoke("auth:setTokens", data),
   getTokens: (): Promise<{

@@ -66,15 +66,30 @@ declare global {
         error?: string;
       }>;
     };
+    grade: {
+      getExamGradeView: () => Promise<{
+        success: boolean;
+        html?: string;
+        error?: string;
+      }>;
+    };
     system: {
       stats: () => Promise<SystemStats>;
       onCpuUpdate: (cb: (cpu: number) => void) => void;
     };
     auth: {
       login: (data: { userId: string; password: string }) => Promise<boolean>;
-      autoLogin: () => Promise<{ userId: string } | null>;
+      autoLogin: () => Promise<{
+        userId: string;
+        loggedIn: boolean;
+        lastLogin: number;
+      } | null>;
       logout: () => Promise<boolean>;
-      get: () => Promise<{ userId: string } | null>;
+      get: () => Promise<{
+        userId: string;
+        loggedIn: boolean;
+        lastLogin: number;
+      } | null>;
       setTokens: (data: {
         authorizedID: string;
         csrf: string;

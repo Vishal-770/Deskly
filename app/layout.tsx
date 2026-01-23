@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import TitleBar from "@/components/TitleBar";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/Modetoggle";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,10 +38,6 @@ export default function RootLayout({
           <TitleBar />
 
           {children}
-
-          <div className="fixed bottom-2 right-2">
-            <ModeToggle />
-          </div>
         </ThemeProvider>
       </body>
     </html>

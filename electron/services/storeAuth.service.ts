@@ -1,5 +1,6 @@
 import Store from "electron-store";
 import keytar from "keytar";
+import { loginService } from "./login.service";
 
 const SERVICE = "Deskly";
 
@@ -39,18 +40,55 @@ export async function loginUser({ userId, password }: LoginPayload) {
 /* =========================
    AUTO LOGIN (session expired)
 ========================= */
-export async function autoLogin() {
+export async function autoLogin(): Promise<boolean | null> {
   const auth = store.get("auth");
   if (!auth?.userId) return null;
 
   const password = await keytar.getPassword(SERVICE, auth.userId);
   if (!password) return null;
 
-  // 🔥 call backend login here
-  return {
-    userId: auth.userId,
-    password, // use internally, DO NOT expose to UI
-  };
+  let loginResult = null;
+
+  try {
+    // 🔹 First attempt
+    loginResult = await loginService({
+      username: auth.userId,
+      password,
+    });
+
+    // 🔹 Retry once if missing tokens
+    if (
+      !loginResult?.authorizedID ||
+      !loginResult?.cookies ||
+      !loginResult?.csrf
+    ) {
+      console.warn("Auto-login failed, retrying once...");
+
+      loginResult = await loginService({
+        username: auth.userId,
+        password,
+      });
+    }
+
+    // 🔹 Final validation
+    if (
+      !loginResult?.authorizedID ||
+      !loginResult?.cookies ||
+      !loginResult?.csrf
+    ) {
+      console.error("Auto-login failed after retry");
+      return null;
+    }
+
+    const { authorizedID, cookies, csrf } = loginResult;
+
+    await setAuthTokens({ authorizedID, cookies, csrf });
+
+    return true;
+  } catch (err) {
+    console.error("Auto-login error:", err);
+    return false;
+  }
 }
 
 /* =========================

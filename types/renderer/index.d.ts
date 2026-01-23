@@ -1,4 +1,5 @@
 import type { SystemStats } from "../electron/system.types";
+import type { StudentHistoryData } from "../../lib/electron/parsers/grade.htmlparser";
 
 declare global {
   interface Window {
@@ -36,6 +37,13 @@ declare global {
       autoLogin(): Promise<{ userId: string } | null>;
       logout(): Promise<boolean>;
       get(): Promise<{ userId: string } | null>;
+    };
+    grade: {
+      getExamGradeView(): Promise<{
+        success: boolean;
+        data?: StudentHistoryData;
+        error?: string;
+      }>;
     };
   }
 }

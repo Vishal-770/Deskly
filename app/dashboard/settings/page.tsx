@@ -4,6 +4,7 @@ import { useAuth } from "@/components/useAuth";
 import { get } from "http";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { ModeToggle } from "@/components/Modetoggle";
 
 const SettingPage = () => {
   const { authState, loading: authLoading, logout, getAuthTokens } = useAuth();
@@ -85,6 +86,10 @@ const SettingPage = () => {
               <span className="text-sm text-muted-foreground">
                 {authState?.userId || "N/A"}
               </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Theme</span>
+              <ModeToggle />
             </div>
           </div>
         </div>

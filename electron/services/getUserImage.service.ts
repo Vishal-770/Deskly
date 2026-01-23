@@ -1,10 +1,16 @@
 import VTOPClient from "../../lib/electron/axios.client";
 import { getAuthTokens } from "../services/storeAuth.service";
+import { handleAuthErrorAndRetry, AuthTokens } from "./errorHandler";
 
-export async function getUserImage() {
+export async function getUserImage(tokens?: AuthTokens): Promise<{
+  success: boolean;
+  image?: string;
+  contentType?: string;
+  error?: string;
+}> {
   try {
-    const tokens = getAuthTokens();
-    if (!tokens) {
+    const authTokens = tokens || getAuthTokens();
+    if (!authTokens) {
       return {
         success: false,
         error: "No auth tokens found",
@@ -14,10 +20,10 @@ export async function getUserImage() {
     const client = VTOPClient();
 
     const res = await client.get(
-      "/vtop/users/image/?id=" + tokens.authorizedID,
+      "/vtop/users/image/?id=" + authTokens.authorizedID,
       {
         headers: {
-          Cookie: tokens.cookies,
+          Cookie: authTokens.cookies,
           Referer: "https://vtopcc.vit.ac.in/vtop/content",
         },
         responseType: "arraybuffer",
@@ -30,10 +36,17 @@ export async function getUserImage() {
       contentType: res.headers["content-type"] || "image/png",
     };
   } catch (err: unknown) {
-    console.error("Get user image error:", err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    try {
+      return await handleAuthErrorAndRetry(err, (newTokens) =>
+        getUserImage(newTokens),
+      );
+    } catch (handledErr) {
+      console.error("Get user image error:", handledErr);
+      return {
+        success: false,
+        error:
+          handledErr instanceof Error ? handledErr.message : String(handledErr),
+      };
+    }
   }
 }
