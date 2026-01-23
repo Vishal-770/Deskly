@@ -28,6 +28,16 @@ export const useAuth = () => {
     fetchAuthState();
   }, []);
 
+  const getAuthTokens = async () => {
+    try {
+      const tokens = await window.auth.getTokens();
+      return tokens;
+    } catch (error) {
+      console.error("Failed to get auth tokens:", error);
+      return null;
+    }
+  };
+
   const logout = async () => {
     try {
       setLoading(true);
@@ -37,6 +47,7 @@ export const useAuth = () => {
       sessionStorage.removeItem("vtp_cookies");
       sessionStorage.removeItem("vtp_authorizedID");
       sessionStorage.removeItem("vtp_csrf");
+      await window.auth.deleteTokens();
     } catch (error) {
       console.error("Logout failed:", error);
       throw error; // Re-throw so caller can handle
@@ -51,5 +62,6 @@ export const useAuth = () => {
     isLoggedIn: authState?.loggedIn || false,
     logout,
     refreshAuthState: fetchAuthState,
+    getAuthTokens,
   };
 };

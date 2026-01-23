@@ -16,7 +16,7 @@ export const LoginForm: React.FC = () => {
 
     try {
       /** CALL LOGIN IPC  */
-      const result = await window.system.login({ username, password });
+      const result = await window.login.authenticate({ username, password });
 
       if (result.success) {
         // Store cookies, authorizedID, and csrf for dashboard to use
@@ -33,12 +33,18 @@ export const LoginForm: React.FC = () => {
           password,
         });
 
+        const responseTokens: boolean = await window.auth.setTokens({
+          authorizedID: result.authorizedID!,
+          csrf: result.csrf!,
+          cookies: result.cookies!,
+        });
+
         /** CHECK IF AUTH STATE IS SET PROPERLY  else login failed*/
 
-        if (response === false) {
+        if (response === false || responseTokens === false) {
           throw new Error("Authentication storage failed.");
         }
-
+        
         /** REDIRECT TO DASHBOARD
          * IF LOGIN AND AUTH STORAGE SUCCESSFUL
          *

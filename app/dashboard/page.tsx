@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Course } from "../../types/renderer/Course.types";
+import { CGPAData } from "../../types/electron/system.types";
 import {
   BarChart,
   Bar,
@@ -16,13 +17,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../../components/ui/chart";
-
-interface CGPAData {
-  totalCreditsRequired: number;
-  earnedCredits: number;
-  currentCGPA: number;
-  nonGradedCore: number;
-}
 
 export default function Dashboard() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -80,8 +74,8 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!window?.system) {
-          setError("System API not available");
+        if (!window?.content) {
+          setError("Content API not available");
           return;
         }
 
@@ -94,7 +88,7 @@ export default function Dashboard() {
           return;
         }
 
-        const content = await window.system.getContent(
+        const content = await window.content.fetch(
           cookies,
           authorizedID || undefined,
           csrf || undefined,
@@ -104,10 +98,10 @@ export default function Dashboard() {
           setCourses(content.courses ?? []);
           setSemester(content.semester ?? "");
         } else {
-          setError(content?.message || "Failed to fetch course content");
+          setError(content?.error || "Failed to fetch course content");
         }
 
-        const cgpa = await window.system.getCGPA(
+        const cgpa = await window.content.cgpa(
           cookies,
           authorizedID || undefined,
           csrf || undefined,
@@ -116,7 +110,7 @@ export default function Dashboard() {
         if (cgpa?.success && cgpa.cgpaData) {
           setCgpaData(cgpa.cgpaData);
         } else if (cgpa && !cgpa.success) {
-          setError(cgpa?.message || "Failed to fetch CGPA data");
+          setError(cgpa?.error || "Failed to fetch CGPA data");
         }
       } catch (e) {
         console.error("Dashboard error:", e);

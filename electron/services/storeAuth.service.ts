@@ -6,13 +6,6 @@ const SERVICE = "Deskly";
 /* =========================
    STORE SCHEMA
 ========================= */
-interface AuthSchema {
-  auth?: {
-    userId: string;
-    loggedIn: boolean;
-    lastLogin: number;
-  };
-}
 
 const store = new Store() as any;
 
@@ -79,4 +72,60 @@ export async function logoutUser() {
 ========================= */
 export function getAuthState() {
   return store.get("auth") ?? null;
+}
+
+export interface SetAuthTokensPayload {
+  authorizedID: string;
+  csrf: string;
+  cookies: string;
+}
+
+/**
+ *
+ * SET AUTH TOKENS IN USERS PC
+ *
+ */
+
+export async function setAuthTokens({
+  authorizedID,
+  csrf,
+  cookies,
+}: SetAuthTokensPayload): Promise<boolean> {
+  try {
+    store.set("authTokens", {
+      authorizedID,
+      csrf,
+      cookies,
+    });
+    return true;
+  } catch (error) {
+    console.error("Error setting auth tokens:", error);
+    return false;
+  }
+}
+
+/**
+ *
+ * GET AUTH TOKENS FROM USERS PC
+ *
+ */
+
+export function getAuthTokens() {
+  return store.get("authTokens") ?? null;
+}
+
+/**
+ * CLEAR AUTH TOKENS AFTER A LOGOUT
+ *
+ *
+ */
+
+export async function clearAuthTokens(): Promise<boolean> {
+  try {
+    store.delete("authTokens");
+    return true;
+  } catch (error) {
+    console.error("Error clearing auth tokens:", error);
+    return false;
+  }
 }

@@ -1,6 +1,12 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { SystemStats, CGPAData } from "../types/electron/system.types";
 
+type SetAuthTokensPayload = {
+  authorizedID: string;
+  csrf: string;
+  cookies: string;
+};
+
 contextBridge.exposeInMainWorld("electron", {
   windowControls: {
     minimize: () => ipcRenderer.send("window-minimize"),
@@ -8,10 +14,9 @@ contextBridge.exposeInMainWorld("electron", {
     close: () => ipcRenderer.send("window-close"),
   },
 });
-contextBridge.exposeInMainWorld("system", {
-  getStats: (): Promise<SystemStats> => ipcRenderer.invoke("system:stats"),
 
-  login: (body: {
+contextBridge.exposeInMainWorld("login", {
+  authenticate: (body: {
     username: string;
     password: string;
   }): Promise<{
@@ -22,8 +27,10 @@ contextBridge.exposeInMainWorld("system", {
     csrf?: string;
     authorizedID?: string;
   }> => ipcRenderer.invoke("login:authenticate", body),
+});
 
-  getContent: (
+contextBridge.exposeInMainWorld("content", {
+  fetch: (
     cookies: string,
     authorizedID?: string,
     csrf?: string,
@@ -41,7 +48,7 @@ contextBridge.exposeInMainWorld("system", {
     error?: string;
   }> => ipcRenderer.invoke("content:fetch", cookies, authorizedID, csrf),
 
-  getCGPA: (
+  cgpa: (
     cookies: string,
     authorizedID?: string,
     csrf?: string,
@@ -50,6 +57,10 @@ contextBridge.exposeInMainWorld("system", {
     cgpaData?: CGPAData;
     error?: string;
   }> => ipcRenderer.invoke("content:cgpa", cookies, authorizedID, csrf),
+});
+
+contextBridge.exposeInMainWorld("system", {
+  stats: (): Promise<SystemStats> => ipcRenderer.invoke("system:stats"),
 
   onCpuUpdate: (callback: (cpu: number) => void) => {
     ipcRenderer.on("cpu:update", (_, cpu) => callback(cpu));
@@ -63,4 +74,12 @@ contextBridge.exposeInMainWorld("auth", {
     ipcRenderer.invoke("auth:autoLogin"),
   logout: (): Promise<boolean> => ipcRenderer.invoke("auth:logout"),
   get: (): Promise<{ userId: string } | null> => ipcRenderer.invoke("auth:get"),
+  setTokens: (data: SetAuthTokensPayload): Promise<boolean> =>
+    ipcRenderer.invoke("auth:setTokens", data),
+  getTokens: (): Promise<{
+    authorizedID: string;
+    csrf: string;
+    cookies: string;
+  } | null> => ipcRenderer.invoke("auth:getTokens"),
+  deleteTokens: (): Promise<boolean> => ipcRenderer.invoke("auth:deleteTokens"),
 });
