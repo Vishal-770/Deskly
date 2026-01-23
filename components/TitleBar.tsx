@@ -1,7 +1,5 @@
 "use client";
 
-import { BarChart3 } from "lucide-react";
-
 declare global {
   interface Window {
     electron?: {
@@ -33,7 +31,7 @@ export default function TitleBar() {
         className="flex-1 px-4 text-sm font-medium flex items-center"
         style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
       >
-        <BarChart3 className="w-4 h-4 mr-2 text-primary" />
+        <img src="/app-logo.png" className="w-4 h-4 mr-2" alt="Logo" />
         Deskly
       </div>
       <div

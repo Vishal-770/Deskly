@@ -59,7 +59,8 @@
       "dist-electron/**/*",
       "out/**/*",
       "package.json",
-      "node_modules/**/*"
+      "node_modules/**/*",
+      "assets/**/*"
     ],
     "asarUnpack": [
       "out/**/*"
@@ -72,7 +73,7 @@
       "target": [
         "nsis"
       ],
-      "icon": "app/favicon.ico"
+      "icon": "assets/app-logo.png"
     },
     "nsis": {
       "oneClick": false,

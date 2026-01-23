@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, User, Key, LogIn, HelpCircle } from "lucide-react";
+import { User, Key, LogIn, HelpCircle } from "lucide-react";
 
 export const LoginForm: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -44,7 +44,7 @@ export const LoginForm: React.FC = () => {
         if (response === false || responseTokens === false) {
           throw new Error("Authentication storage failed.");
         }
-        
+
         /** REDIRECT TO DASHBOARD
          * IF LOGIN AND AUTH STORAGE SUCCESSFUL
          *
@@ -75,7 +75,7 @@ export const LoginForm: React.FC = () => {
         <div className="text-center space-y-3">
           <div className="flex justify-center mb-4">
             <div className="w-14 h-14 bg-card text-foreground flex items-center justify-center border border-input rounded-sm shadow-sm">
-              <Lock className="w-8 h-8" />
+              <img src="/app-logo.png" className="w-8 h-8" alt="Logo" />
             </div>
           </div>
           <h1 className="text-3xl font-display font-extrabold tracking-tight text-foreground leading-none">

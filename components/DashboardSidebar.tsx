@@ -2,14 +2,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  BookOpen,
-  GraduationCap,
-  Settings,
-  BarChart3,
-  User,
-} from "lucide-react";
+import { Home, BookOpen, GraduationCap, Settings, User } from "lucide-react";
 import { useAuth } from "./useAuth";
 
 const DashboardSidebar = () => {
@@ -33,7 +26,7 @@ const DashboardSidebar = () => {
     <div className="fixed left-0 top-8 w-16 h-full bg-card/98 backdrop-blur-sm text-card-foreground py-4 border-r border-border/50 overflow-y-auto shadow-lg flex flex-col items-center">
       {/* Logo */}
       <div className="mb-6 p-2 rounded-lg hover:bg-muted transition-all duration-200 cursor-pointer group relative">
-        <BarChart3 className="w-6 h-6 text-primary" />
+        <img src="/app-logo.png" className="w-6 h-6" alt="Logo" />
         <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
           <span className="text-sm font-medium">Deskly</span>
         </div>
