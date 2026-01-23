@@ -65,6 +65,12 @@ contextBridge.exposeInMainWorld("content", {
     cgpaData?: CGPAData;
     error?: string;
   }> => ipcRenderer.invoke("content:cgpa", cookies, authorizedID, csrf),
+  image: (): Promise<{
+    success: boolean;
+    image?: string;
+    contentType?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("userImage:fetch"),
 });
 
 contextBridge.exposeInMainWorld("system", {

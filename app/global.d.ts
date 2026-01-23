@@ -29,15 +29,29 @@ declare global {
       }>;
     };
     content: {
-      fetch: () => Promise<{
+      fetch: (
+        cookies: string,
+        authorizedID?: string,
+        csrf?: string,
+      ) => Promise<{
         success: boolean;
         courses?: Course[];
         semester?: string;
         error?: string;
       }>;
-      cgpa: () => Promise<{
+      cgpa: (
+        cookies: string,
+        authorizedID?: string,
+        csrf?: string,
+      ) => Promise<{
         success: boolean;
         cgpaData?: CGPAData;
+        error?: string;
+      }>;
+      image: () => Promise<{
+        success: boolean;
+        image?: string;
+        contentType?: string;
         error?: string;
       }>;
     };
