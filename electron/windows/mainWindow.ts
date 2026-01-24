@@ -15,7 +15,7 @@ export function createWindow() {
     minWidth: 600,
     frame: false,
 
-    icon: path.join(app.getAppPath(), "assets/app-logo.png"),
+    icon: path.join(app.getAppPath(), "public/app-logo.png"),
     webPreferences: {
       preload: path.join(__dirname, "../preload.js"),
       contextIsolation: true,

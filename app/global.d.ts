@@ -1,13 +1,21 @@
 import { SystemStats, CGPAData } from "@/types/electron/system.types";
 import { Course } from "@/types/renderer/Course.types";
+import { Semester } from "@/types/electron/Semster.types";
 
 declare global {
   interface Window {
-    electron: {
+    electron?: {
       windowControls: {
         minimize: () => void;
         maximize: () => void;
         close: () => void;
+      };
+      timetable: {
+        get: () => Promise<{
+          success: boolean;
+          semesters?: Semester[];
+          error?: string;
+        }>;
       };
     };
     login: {
@@ -29,21 +37,13 @@ declare global {
       }>;
     };
     content: {
-      fetch: (
-        cookies: string,
-        authorizedID?: string,
-        csrf?: string,
-      ) => Promise<{
+      fetch: () => Promise<{
         success: boolean;
         courses?: Course[];
         semester?: string;
         error?: string;
       }>;
-      cgpa: (
-        cookies: string,
-        authorizedID?: string,
-        csrf?: string,
-      ) => Promise<{
+      cgpa: () => Promise<{
         success: boolean;
         cgpaData?: CGPAData;
         error?: string;
@@ -62,6 +62,7 @@ declare global {
         csrf: string,
       ) => Promise<{
         success: boolean;
+        data?: any;
         html?: string;
         error?: string;
       }>;
@@ -69,7 +70,7 @@ declare global {
     grade: {
       getExamGradeView: () => Promise<{
         success: boolean;
-        html?: string;
+        data?: any;
         error?: string;
       }>;
     };
@@ -101,6 +102,24 @@ declare global {
         cookies: string;
       } | null>;
       deleteTokens: () => Promise<boolean>;
+      setSemester: (data: Semester) => Promise<boolean>;
+      getSemester: () => Promise<Semester | null>;
+      clearSemester: () => Promise<boolean>;
+      getSemesters: () => Promise<{
+        success: boolean;
+        semesters?: Semester[];
+        error?: string;
+      }>;
+    };
+    update: {
+      onCheckingForUpdate: (callback: () => void) => void;
+      onUpdateAvailable: (callback: () => void) => void;
+      onUpdateNotAvailable: (callback: () => void) => void;
+      onDownloadProgress: (
+        callback: (progress: { percent: number }) => void,
+      ) => void;
+      onUpdateDownloaded: (callback: () => void) => void;
+      onError: (callback: (error: Error) => void) => void;
     };
   }
 }

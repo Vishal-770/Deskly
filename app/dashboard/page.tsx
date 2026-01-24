@@ -102,6 +102,11 @@ export default function Dashboard() {
 
     const fetchDashboard = async () => {
       try {
+        const tokens = await window.auth.getTokens();
+        if (!tokens) {
+          throw new Error("No auth tokens found");
+        }
+
         const content = await window.content.fetch();
         const cgpa = await window.content.cgpa();
 

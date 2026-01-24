@@ -1,5 +1,8 @@
 import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
+import { Semester } from "@/types/electron/Semster.types";
 import { contextBridge, ipcRenderer } from "electron";
+
+console.log("Preload script loaded");
 
 type SetAuthTokensPayload = {
   authorizedID: string;
@@ -28,6 +31,9 @@ contextBridge.exposeInMainWorld("electron", {
     maximize: () => ipcRenderer.send("window-maximize"),
     close: () => ipcRenderer.send("window-close"),
   },
+  timetable: {
+    get: () => ipcRenderer.invoke("timetable:get"),
+  },
 });
 
 contextBridge.exposeInMainWorld("login", {
@@ -53,11 +59,7 @@ contextBridge.exposeInMainWorld("login", {
 });
 
 contextBridge.exposeInMainWorld("content", {
-  fetch: (
-    cookies: string,
-    authorizedID?: string,
-    csrf?: string,
-  ): Promise<{
+  fetch: (): Promise<{
     success: boolean;
     courses?: Array<{
       index: number;
@@ -69,17 +71,13 @@ contextBridge.exposeInMainWorld("content", {
     }>;
     semester?: string;
     error?: string;
-  }> => ipcRenderer.invoke("content:fetch", cookies, authorizedID, csrf),
+  }> => ipcRenderer.invoke("content:fetch"),
 
-  cgpa: (
-    cookies: string,
-    authorizedID?: string,
-    csrf?: string,
-  ): Promise<{
+  cgpa: (): Promise<{
     success: boolean;
     cgpaData?: CGPAData;
     error?: string;
-  }> => ipcRenderer.invoke("content:cgpa", cookies, authorizedID, csrf),
+  }> => ipcRenderer.invoke("content:cgpa"),
   image: (): Promise<{
     success: boolean;
     image?: string;
@@ -139,4 +137,38 @@ contextBridge.exposeInMainWorld("auth", {
     cookies: string;
   } | null> => ipcRenderer.invoke("auth:getTokens"),
   deleteTokens: (): Promise<boolean> => ipcRenderer.invoke("auth:deleteTokens"),
+  setSemester: (data: Semester): Promise<boolean> =>
+    ipcRenderer.invoke("auth:setSemester", data),
+  getSemester: (): Promise<Semester | null> =>
+    ipcRenderer.invoke("auth:getSemester"),
+  clearSemester: (): Promise<boolean> =>
+    ipcRenderer.invoke("auth:clearSemester"),
+  getSemesters: (): Promise<{
+    success: boolean;
+    semesters?: Semester[];
+    error?: string;
+  }> => ipcRenderer.invoke("auth:getSemesters"),
+});
+
+contextBridge.exposeInMainWorld("update", {
+  onCheckingForUpdate: (callback: () => void) => {
+    ipcRenderer.on("update:checking-for-update", () => callback());
+  },
+  onUpdateAvailable: (callback: () => void) => {
+    ipcRenderer.on("update:update-available", () => callback());
+  },
+  onUpdateNotAvailable: (callback: () => void) => {
+    ipcRenderer.on("update:update-not-available", () => callback());
+  },
+  onDownloadProgress: (callback: (progress: { percent: number }) => void) => {
+    ipcRenderer.on("update:download-progress", (_, progress) =>
+      callback(progress),
+    );
+  },
+  onUpdateDownloaded: (callback: () => void) => {
+    ipcRenderer.on("update:update-downloaded", () => callback());
+  },
+  onError: (callback: (error: Error) => void) => {
+    ipcRenderer.on("update:error", (_, error) => callback(error));
+  },
 });

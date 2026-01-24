@@ -1,6 +1,7 @@
 import Store from "electron-store";
 import keytar from "keytar";
 import { loginService } from "./login.service";
+import { Semester } from "@/types/electron/Semster.types";
 
 const SERVICE = "Deskly";
 
@@ -164,6 +165,49 @@ export async function clearAuthTokens(): Promise<boolean> {
     return true;
   } catch (error) {
     console.error("Error clearing auth tokens:", error);
+    return false;
+  }
+}
+
+/**
+ *
+ * Store Semester Info
+ *
+ */
+
+export async function setSemesterInfo(semester: Semester): Promise<boolean> {
+  try {
+    store.set("currentSemester", semester);
+    return true;
+  } catch (error) {
+    console.error("Error setting semester info:", error);
+    return false;
+  }
+}
+/**
+ *
+ * @returns Semester info from store
+ *
+ */
+export function getSemesterInfo(): Semester | null {
+  try {
+    return store.get("currentSemester") ?? null;
+  } catch (error) {
+    console.error("Error getting semester info:", error);
+    return null;
+  }
+}
+/***
+ * Clear Semester Info from store
+ *
+ */
+
+export async function clearSemesterInfo(): Promise<boolean> {
+  try {
+    store.delete("currentSemester");
+    return true;
+  } catch (error) {
+    console.error("Error clearing semester info:", error);
     return false;
   }
 }

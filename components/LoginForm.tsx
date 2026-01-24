@@ -19,11 +19,6 @@ export const LoginForm: React.FC = () => {
       const result = await window.login.authenticate({ username, password });
 
       if (result.success) {
-        // Store cookies, authorizedID, and csrf for dashboard to use
-        sessionStorage.setItem("vtp_cookies", result.cookies || "");
-        sessionStorage.setItem("vtp_authorizedID", result.authorizedID || "");
-        sessionStorage.setItem("vtp_csrf", result.csrf || "");
-
         /**
          * SET AUTH STATE IN STORE
          *
@@ -39,9 +34,22 @@ export const LoginForm: React.FC = () => {
           cookies: result.cookies!,
         });
 
+        // Get semester data
+        const semesterResult = await window.auth.getSemesters();
+        if (!semesterResult.success || !semesterResult.semesters) {
+          throw new Error("Failed to fetch semesters");
+        }
+        const responseSemester: boolean = await window.auth.setSemester(
+          semesterResult.semesters[0],
+        );
+
         /** CHECK IF AUTH STATE IS SET PROPERLY  else login failed*/
 
-        if (response === false || responseTokens === false) {
+        if (
+          response === false ||
+          responseTokens === false ||
+          responseSemester === false
+        ) {
           throw new Error("Authentication storage failed.");
         }
 

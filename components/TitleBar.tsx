@@ -1,17 +1,5 @@
 "use client";
 
-declare global {
-  interface Window {
-    electron?: {
-      windowControls: {
-        minimize: () => void;
-        maximize: () => void;
-        close: () => void;
-      };
-    };
-  }
-}
-
 export default function TitleBar() {
   const handleMinimize = () => {
     window.electron?.windowControls.minimize();

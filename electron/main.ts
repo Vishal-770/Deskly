@@ -1,5 +1,7 @@
 import { app, protocol } from "electron";
 import * as path from "path";
+import { autoUpdater } from "electron-updater";
+import { mainWindow } from "./windows/mainWindow";
 
 /*******
  * IPC IMPORTS
@@ -14,6 +16,7 @@ import "./ipc/getUserImage.ipc";
 import "./ipc/auth.ipc";
 import "./ipc/profile.ipc";
 import "./ipc/grade.ipc";
+import "./ipc/timetable.ipc";
 
 /*******
  * END IPC IMPORTS
@@ -36,6 +39,36 @@ if (!isDev) {
 
 app.whenReady().then(() => {
   initWindow();
+
+  // Auto-updater logic
+  if (!isDev) {
+    autoUpdater.checkForUpdatesAndNotify();
+
+    autoUpdater.on("checking-for-update", () => {
+      mainWindow?.webContents.send("update:checking-for-update");
+    });
+
+    autoUpdater.on("update-available", () => {
+      mainWindow?.webContents.send("update:update-available");
+    });
+
+    autoUpdater.on("update-not-available", () => {
+      mainWindow?.webContents.send("update:update-not-available");
+    });
+
+    autoUpdater.on("error", (err) => {
+      mainWindow?.webContents.send("update:error", err);
+    });
+
+    autoUpdater.on("download-progress", (progress) => {
+      mainWindow?.webContents.send("update:download-progress", progress);
+    });
+
+    autoUpdater.on("update-downloaded", () => {
+      mainWindow?.webContents.send("update:update-downloaded");
+      autoUpdater.quitAndInstall();
+    });
+  }
 });
 
 app.on("window-all-closed", () => {

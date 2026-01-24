@@ -2,6 +2,7 @@ import VTOPClient from "../../lib/electron/axios.client";
 import { handleAuthErrorAndRetry } from "./errorHandler";
 import { extractCGPAFromHTML } from "../../lib/electron/ParseDashboarCgpa";
 import { extractAttendanceFromHTML } from "../../lib/electron/ParseDashboardAttendance";
+import { getAuthTokens } from "./storeAuth.service";
 
 export interface CourseAttendance {
   index: number;
@@ -24,29 +25,33 @@ export interface CGPAData {
   nonGradedCore: number;
 }
 
-export async function getContentPage(
-  cookies: string,
-  authorizedID?: string,
-  csrf?: string,
-): Promise<{
+export async function getContentPage(): Promise<{
   success: boolean;
   courses?: CourseAttendance[];
   semester?: string;
   error?: string;
 }> {
   try {
+    const tokens = getAuthTokens();
+    if (!tokens) {
+      return {
+        success: false,
+        error: "No auth tokens found",
+      };
+    }
+
     const client = VTOPClient();
 
     const contentRes = await client.post(
       "/vtop/get/dashboard/current/semester/course/details",
       new URLSearchParams({
-        authorizedID: authorizedID || "",
-        _csrf: csrf || "",
+        authorizedID: tokens.authorizedID,
+        _csrf: tokens.csrf,
         x: new Date().toUTCString(), // Current timestamp in RFC 2822 format
       }),
       {
         headers: {
-          Cookie: cookies,
+          Cookie: tokens.cookies,
           "Content-Type": "application/x-www-form-urlencoded",
           Referer: "https://vtopcc.vit.ac.in/vtop/content",
         },
@@ -65,9 +70,7 @@ export async function getContentPage(
     };
   } catch (err: unknown) {
     try {
-      return await handleAuthErrorAndRetry(err, (tokens) =>
-        getContentPage(tokens.cookies, tokens.authorizedID, tokens.csrf),
-      );
+      return await handleAuthErrorAndRetry(err, () => getContentPage());
     } catch (handledErr) {
       console.error("Error fetching content page:");
       return {
@@ -79,28 +82,32 @@ export async function getContentPage(
   }
 }
 
-export async function getCGPAPage(
-  cookies: string,
-  authorizedID?: string,
-  csrf?: string,
-): Promise<{
+export async function getCGPAPage(): Promise<{
   success: boolean;
   cgpaData?: CGPAData;
   error?: string;
 }> {
   try {
+    const tokens = getAuthTokens();
+    if (!tokens) {
+      return {
+        success: false,
+        error: "No auth tokens found",
+      };
+    }
+
     const client = VTOPClient();
 
     const cgpaRes = await client.post(
       "/vtop/get/dashboard/current/cgpa/credits",
       new URLSearchParams({
-        authorizedID: authorizedID || "",
-        _csrf: csrf || "",
+        authorizedID: tokens.authorizedID,
+        _csrf: tokens.csrf,
         x: new Date().toUTCString(),
       }),
       {
         headers: {
-          Cookie: cookies,
+          Cookie: tokens.cookies,
           "Content-Type": "application/x-www-form-urlencoded",
           Referer: "https://vtopcc.vit.ac.in/vtop/content",
         },
@@ -127,9 +134,7 @@ export async function getCGPAPage(
     };
   } catch (err: unknown) {
     try {
-      return await handleAuthErrorAndRetry(err, (tokens) =>
-        getCGPAPage(tokens.cookies, tokens.authorizedID, tokens.csrf),
-      );
+      return await handleAuthErrorAndRetry(err, () => getCGPAPage());
     } catch (handledErr) {
       console.error(
         "[CGPA FETCH] Error after handling auth error:",
