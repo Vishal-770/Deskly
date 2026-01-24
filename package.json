@@ -1,6 +1,6 @@
 {
   "name": "deskly",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Deskly - Your Desktop Companion",
   "author": "Deskly Team",
   "private": true,
@@ -87,8 +87,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "YOUR_GITHUB_USERNAME",
-        "repo": "YOUR_REPO_NAME"
+        "owner": "Vishal-770",
+        "repo": "deskly"
       }
     ],
     "extraMetadata": {

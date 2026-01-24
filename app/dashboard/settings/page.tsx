@@ -166,9 +166,9 @@ const SettingPage = () => {
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="w-full">
                   {availableSemesters.map((s) => (
-                    <DropdownMenuItem
+                    <DropdownMenuItem className="w-full"
                       key={s.id}
                       onClick={async () => {
                         await setSemester(s);
