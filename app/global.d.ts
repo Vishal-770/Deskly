@@ -9,6 +9,7 @@ import { Semester } from "@/types/electron/Semster.types";
 import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
 import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
 import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
+import { StudentMarkEntry } from "@/types/electron/marks.types";
 
 declare global {
   interface Window {
@@ -82,6 +83,13 @@ declare global {
       getExamGradeView: () => Promise<{
         success: boolean;
         data?: StudentHistoryData;
+        error?: string;
+      }>;
+    };
+    marks: {
+      getStudentMarkView: (semesterSubId: string) => Promise<{
+        success: boolean;
+        data?: StudentMarkEntry[];
         error?: string;
       }>;
     };

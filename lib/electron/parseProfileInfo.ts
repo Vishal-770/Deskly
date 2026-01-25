@@ -103,7 +103,6 @@ const parseTableToMap = (
           key = currentPrefix.toLowerCase() + key;
         }
         data[key] = value;
-        console.log(`Parsed ${containerId}: ${key} = ${value}`); // Debug log
       }
     }
   });
@@ -149,7 +148,6 @@ export function parseStudentHtml(htmlContent: string): ParsedStudentData {
   };
 
   // 2. Educational Information (collapseTwo)
-  console.log("Educational section HTML:", $("#collapseTwo").html());
   const eduMap = parseTableToMap($, "collapseTwo");
 
   // Find the correct year of passing key
@@ -163,7 +161,6 @@ export function parseStudentHtml(htmlContent: string): ParsedStudentData {
     );
     if (possibleKeys.length > 0) {
       yearOfPassingKey = possibleKeys[0];
-      console.log("Using alternative year key:", yearOfPassingKey);
     }
   }
 

@@ -20,15 +20,7 @@ export async function handleAuthErrorAndRetry<T>(
   if (axios.isAxiosError(err)) {
     const status = err.response?.status;
     if (status === 401 || status === 403 || status === 404) {
-      console.log(
-        `[HANDLE AUTH ERROR] ${status} error detected - tokens may be expired, attempting relogin.`,
-      );
-      console.log(
-        "[HANDLE AUTH ERROR] Attempting auto-login due to auth error.",
-      );
-
       const response = await autoLogin();
-      console.log(`[HANDLE AUTH ERROR] Auto-login result: ${response}`);
 
       if (response === true) {
         const newTokens = getAuthTokens();

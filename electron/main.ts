@@ -17,6 +17,7 @@ import "./ipc/auth.ipc";
 import "./ipc/profile.ipc";
 import "./ipc/grade.ipc";
 import "./ipc/timetable.ipc";
+import "./ipc/marks.ipc";
 
 /*******
  * END IPC IMPORTS
@@ -36,13 +37,8 @@ function registerRendererProtocol() {
     path.join(__dirname, "../out"),
   ];
 
-  console.log("[Protocol] Searching for 'out' directory in:", outDirCandidates);
-
   const outDir = outDirCandidates.find((candidate) => {
     const exists = fs.existsSync(candidate);
-    console.log(
-      `[Protocol] Checking ${candidate}: ${exists ? "FOUND" : "not found"}`,
-    );
     return exists;
   });
 
@@ -52,8 +48,6 @@ function registerRendererProtocol() {
     );
     return false;
   }
-
-  console.log(`[Protocol] Using output directory: ${outDir}`);
 
   // Use modern protocol.handle() API (replaces deprecated registerFileProtocol)
   protocol.handle("app", (request) => {
@@ -71,13 +65,8 @@ function registerRendererProtocol() {
 
       // Fallback to root index if the requested file does not exist
       if (!fs.existsSync(finalPath)) {
-        console.log(
-          `[Protocol] File not found: ${finalPath}, falling back to index.html`,
-        );
         finalPath = path.join(outDir, "index.html");
       }
-
-      console.log(`[Protocol] Serving: ${request.url} -> ${finalPath}`);
 
       // Return file using net.fetch with file:// URL
       return net.fetch(`file://${finalPath}`);
@@ -90,9 +79,6 @@ function registerRendererProtocol() {
     }
   });
 
-  console.log(
-    "[Protocol] Successfully registered app:// protocol with modern API",
-  );
   return true;
 }
 

@@ -47,7 +47,6 @@ export function createWindow() {
 
   // Show window only when content is ready
   mainWindow.once("ready-to-show", () => {
-    console.log("[Window] Content loaded, showing window");
     mainWindow?.show();
   });
 
@@ -64,16 +63,12 @@ export function createWindow() {
   );
 
   // Log when page finishes loading
-  mainWindow.webContents.on("did-finish-load", () => {
-    console.log("[Window] Page finished loading");
-  });
+  mainWindow.webContents.on("did-finish-load", () => {});
 
   // Log console messages from renderer for debugging
   mainWindow.webContents.on(
     "console-message",
-    (event, level, message, line, sourceId) => {
-      console.log(`[Renderer Console] ${message}`);
-    },
+    (event, level, message, line, sourceId) => {},
   );
 
   if (isDev) {
@@ -81,7 +76,6 @@ export function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     // Renderer is served via the custom app:// protocol registered in main.ts
-    console.log("[Window] Loading app://index.html");
     mainWindow.loadURL("app://index.html");
   }
 }

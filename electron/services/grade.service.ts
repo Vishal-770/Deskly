@@ -39,9 +39,7 @@ export async function getExamGradeView(): Promise<{
       },
     );
 
-    console.log("Exam Grade View HTML:", res.data);
     const parsedData = parseStudentHistory(res.data);
-    console.log("Parsed Grade Data:", parsedData);
 
     return {
       success: true,

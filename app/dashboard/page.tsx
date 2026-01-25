@@ -9,6 +9,7 @@ import {
 } from "../../types/renderer/Course.types";
 import { CGPAData } from "../../types/electron/system.types";
 import { WeeklySchedule } from "../../types/electron/TimeTable.types";
+import { StudentMarkEntry } from "../../types/electron/marks.types";
 import {
   BarChart,
   Bar,
@@ -62,6 +63,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { getSemester } = useSemester();
+  const [marks, setMarks] = useState<StudentMarkEntry[] | null>(null);
   /* -------------------- Chart Data -------------------- */
 
   const attendanceChartConfig = {
@@ -195,6 +197,25 @@ export default function Dashboard() {
     }
   };
 
+  const testMarks = async () => {
+    try {
+      const currentSemester = await window.auth.getSemester();
+      if (!currentSemester) {
+        alert("No current semester set");
+        return;
+      }
+      const result = await window.marks.getStudentMarkView(currentSemester.id);
+      if (result.success) {
+        setMarks(result.data || null);
+        alert("Marks fetched successfully. Check console for HTML.");
+      } else {
+        alert(`Failed: ${result.error}`);
+      }
+    } catch (e) {
+      alert("Error fetching marks");
+    }
+  };
+
   /* -------------------- States -------------------- */
 
   if (loading) {
@@ -244,13 +265,18 @@ export default function Dashboard() {
             <Button onClick={testAttendance} variant="outline">
               Test Attendance
             </Button>
+            <Button onClick={testMarks} variant="outline">
+              Test Marks
+            </Button>
           </div>
         </div>
       </header>
 
       {/* Today's Classes */}
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">Today&apos;s Classes ({today})</h2>
+        <h2 className="text-2xl font-semibold">
+          Today&apos;s Classes ({today})
+        </h2>
         {todaysClasses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {todaysClasses.map((cls, index) => (

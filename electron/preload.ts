@@ -3,6 +3,8 @@ import { Semester } from "@/types/electron/Semster.types";
 import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
 import { CourseDetails } from "@/types/electron/Course.types";
 import { WeeklySchedule } from "@/types/electron/TimeTable.types";
+import { StudentMarkEntry } from "@/types/electron/marks.types";
+import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
 import { contextBridge, ipcRenderer } from "electron";
 
 console.log("Preload script loaded");
@@ -101,7 +103,7 @@ contextBridge.exposeInMainWorld("profile", {
     csrf: string,
   ): Promise<{
     success: boolean;
-    data?: any;
+    data?: ParsedStudentData;
     html?: string;
     error?: string;
   }> => ipcRenderer.invoke("profile:get", { cookies, authorizedID, csrf }),
@@ -113,6 +115,16 @@ contextBridge.exposeInMainWorld("grade", {
     data?: StudentHistoryData;
     error?: string;
   }> => ipcRenderer.invoke("grade:getExamGradeView"),
+});
+
+contextBridge.exposeInMainWorld("marks", {
+  getStudentMarkView: (
+    semesterSubId: string,
+  ): Promise<{
+    success: boolean;
+    data?: StudentMarkEntry[];
+    error?: string;
+  }> => ipcRenderer.invoke("marks:getStudentMarkView", semesterSubId),
 });
 
 contextBridge.exposeInMainWorld("system", {
