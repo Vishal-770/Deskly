@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/components/useAuth";
 import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
+import Loader from "@/components/Loader";
 
 /* -------------------- Small Helpers -------------------- */
 
@@ -71,14 +72,7 @@ const ProfilePage = () => {
   /* -------------------- States -------------------- */
 
   if (loading) {
-    return (
-      <div className="h-full w-full flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <div className="animate-spin h-6 w-6 border-b-2 border-primary rounded-full" />
-          <span className="text-muted-foreground">Loading authentication…</span>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!authState) {

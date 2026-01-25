@@ -1,7 +1,6 @@
 import { app, protocol, net } from "electron";
 import * as path from "path";
 import * as fs from "fs";
-import { mainWindow } from "./windows/mainWindow";
 
 /*******
  * IPC IMPORTS
@@ -18,6 +17,7 @@ import "./ipc/profile.ipc";
 import "./ipc/grade.ipc";
 import "./ipc/timetable.ipc";
 import "./ipc/marks.ipc";
+import "./ipc/curriculum.ipc";
 
 /*******
  * END IPC IMPORTS

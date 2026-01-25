@@ -17,6 +17,8 @@ import {
 import { cn } from "../../../lib/utils";
 import { CoursesResponse } from "../../../types/renderer/Course.types";
 import { CourseDetails } from "../../../types/electron/Course.types";
+import Loader from "@/components/Loader";
+
 
 function StatCard({
   label,
@@ -252,14 +254,7 @@ export default function CoursesPage() {
   const lectureTutorialCredits = lectureCredits + tutorialCredits;
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Loading courses...</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {

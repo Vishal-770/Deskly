@@ -5,6 +5,7 @@ import { Clock, MapPin, User, BookOpen, Calendar } from "lucide-react";
 import { WeeklyScheduleResponse } from "../../../types/renderer/Course.types";
 import { WeeklySchedule } from "../../../types/electron/TimeTable.types";
 import { cn } from "@/lib/renderer/utils";
+import Loader from "@/components/Loader";
 
 // Types based on the original file
 interface Session {
@@ -88,20 +89,6 @@ function EmptyDay() {
   );
 }
 
-function LoadingState() {
-  return (
-    <div className="flex flex-col items-center justify-center h-[60vh]">
-      <div className="relative">
-        <div className="h-12 w-12 rounded-full border-2 border-muted" />
-        <div className="absolute inset-0 h-12 w-12 rounded-full border-2 border-transparent border-t-foreground animate-spin" />
-      </div>
-      <p className="mt-4 text-sm text-muted-foreground animate-pulse">
-        Loading timetable...
-      </p>
-    </div>
-  );
-}
-
 function ErrorState({ error }: { error: string }) {
   return (
     <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
@@ -173,7 +160,7 @@ export default function TimetablePage() {
     fetchTimetable();
   }, [currentDay]);
 
-  if (loading) return <LoadingState />;
+  if (loading) return <Loader />;
   if (error) return <ErrorState error={error} />;
   if (!timetable) return <NoDataState />;
 

@@ -25,8 +25,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../../components/ui/chart";
-import { Button } from "../../components/ui/button";
 import { useSemester } from "@/components/useSemester";
+import Loader from "../../components/Loader";
+import { Button } from "@/components/ui/button";
 
 /* -------------------- Small Helpers -------------------- */
 
@@ -62,8 +63,7 @@ export default function Dashboard() {
   const [timetable, setTimetable] = useState<WeeklySchedule | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { getSemester } = useSemester();
-  const [marks, setMarks] = useState<StudentMarkEntry[] | null>(null);
+
   /* -------------------- Chart Data -------------------- */
 
   const attendanceChartConfig = {
@@ -169,64 +169,10 @@ export default function Dashboard() {
     };
   }, []);
 
-  const testTimetable = async () => {
-    try {
-      const result: WeeklyScheduleResponse =
-        await window.timetable.currentSemester();
-      alert(`Timetable fetched: ${result.success ? "Success" : "Failed"}`);
-    } catch (e) {
-      alert("Error fetching timetable");
-    }
-  };
-
-  const testCourses = async () => {
-    try {
-      const result: CoursesResponse = await window.timetable.courses();
-      alert(`Courses fetched: ${result.success ? "Success" : "Failed"}`);
-    } catch (e) {
-      alert("Error fetching courses");
-    }
-  };
-
-  const testAttendance = async () => {
-    try {
-      const result: AttendanceResponse = await window.timetable.attendance();
-      alert(`Attendance fetched: ${result.success ? "Success" : "Failed"}`);
-    } catch (e) {
-      alert("Error fetching attendance");
-    }
-  };
-
-  const testMarks = async () => {
-    try {
-      const currentSemester = await window.auth.getSemester();
-      if (!currentSemester) {
-        alert("No current semester set");
-        return;
-      }
-      const result = await window.marks.getStudentMarkView(currentSemester.id);
-      if (result.success) {
-        setMarks(result.data || null);
-        alert("Marks fetched successfully. Check console for HTML.");
-      } else {
-        alert(`Failed: ${result.error}`);
-      }
-    } catch (e) {
-      alert("Error fetching marks");
-    }
-  };
-
   /* -------------------- States -------------------- */
 
   if (loading) {
-    return (
-      <div className="h-full w-full flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <div className="animate-spin h-8 w-8 border-b-2 border-primary rounded-full" />
-          <span className="text-muted-foreground">Loading dashboard…</span>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {
@@ -242,34 +188,32 @@ export default function Dashboard() {
     );
   }
 
+  const testCurriculum = async () => {
+    try {
+      const result = await window.curriculum.get();
+      if (result.success) {
+        console.log("Curriculum HTML:", result.html);
+      } else {
+        console.error("Error:", result.error);
+      }
+    } catch (e) {
+      console.error("Error:", e instanceof Error ? e.message : String(e));
+    }
+  };
+
   /* -------------------- UI -------------------- */
 
   return (
     <div className="h-full w-full px-6 lg:px-10 py-6 space-y-12">
       {/* Header */}
       <header className="space-y-1">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Academic Dashboard</h1>
-            {semester && (
-              <p className="text-muted-foreground">Semester: {semester}</p>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={testCourses} variant="outline">
-              Test Courses
-            </Button>
-            <Button onClick={testTimetable} variant="outline">
-              Test Timetable
-            </Button>
-            <Button onClick={testAttendance} variant="outline">
-              Test Attendance
-            </Button>
-            <Button onClick={testMarks} variant="outline">
-              Test Marks
-            </Button>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold">Academic Dashboard</h1>
+          {semester && (
+            <p className="text-muted-foreground">Semester: {semester}</p>
+          )}
         </div>
+        <Button onClick={testCurriculum}>Test Curriculum</Button>
       </header>
 
       {/* Today's Classes */}

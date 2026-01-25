@@ -10,6 +10,8 @@ import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
 import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
 import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
+import { Category } from "@/types/electron/curriculum.types";
+import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 
 declare global {
   interface Window {
@@ -76,6 +78,25 @@ declare global {
         success: boolean;
         data?: ParsedStudentData;
         html?: string;
+        error?: string;
+      }>;
+    };
+    curriculum: {
+      get: () => Promise<{
+        success: boolean;
+        data?: Category[];
+        html?: string;
+        error?: string;
+      }>;
+      getCategoryView: (categoryId: string) => Promise<{
+        success: boolean;
+        data?: CourseEntry[];
+        html?: string;
+        error?: string;
+      }>;
+      downloadSyllabus: (courseCode: string) => Promise<{
+        success: boolean;
+        message?: string;
         error?: string;
       }>;
     };

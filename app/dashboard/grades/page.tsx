@@ -15,6 +15,7 @@ import {
   Tooltip,
 } from "recharts";
 import { Search, ChevronDown } from "lucide-react";
+import Loader from "@/components/Loader";
 
 /* -------------------- Helper Components -------------------- */
 
@@ -64,17 +65,7 @@ export default function GradePage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="relative w-8 h-8">
-            <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
-            <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          </div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error || !gradeData) {

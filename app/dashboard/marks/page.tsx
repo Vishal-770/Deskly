@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { useSemester } from "@/components/useSemester";
 import { BookOpen, User, Calendar, TrendingUp, Circle } from "lucide-react";
+import Loader from "@/components/Loader";
 
 export default function MarksPage() {
   const { currentSemester, loading: semesterLoading } = useSemester();
@@ -40,11 +41,7 @@ export default function MarksPage() {
   }, [currentSemester]);
 
   if (semesterLoading || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading marks…</p>
-      </div>
-    );
+    return <Loader />;
   }
 
   if (error) {
@@ -58,8 +55,11 @@ export default function MarksPage() {
 
   if (!marksData || marksData.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">No marks data available</p>
+      <div className="h-[90vh] w-full flex items-center justify-center text-center">
+        <div>
+          <BookOpen className="w-10 h-10 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">No marks data available</p>
+        </div>
       </div>
     );
   }

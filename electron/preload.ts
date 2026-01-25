@@ -5,6 +5,8 @@ import { CourseDetails } from "@/types/electron/Course.types";
 import { WeeklySchedule } from "@/types/electron/TimeTable.types";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
+import { Category } from "@/types/electron/curriculum.types";
+import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { contextBridge, ipcRenderer } from "electron";
 
 console.log("Preload script loaded");
@@ -107,6 +109,30 @@ contextBridge.exposeInMainWorld("profile", {
     html?: string;
     error?: string;
   }> => ipcRenderer.invoke("profile:get", { cookies, authorizedID, csrf }),
+});
+
+contextBridge.exposeInMainWorld("curriculum", {
+  get: (): Promise<{
+    success: boolean;
+    data?: Category[];
+    html?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("curriculum:get"),
+  getCategoryView: (
+    categoryId: string,
+  ): Promise<{
+    success: boolean;
+    data?: CourseEntry[];
+    html?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("curriculum:getCategoryView", { categoryId }),
+  downloadSyllabus: (
+    courseCode: string,
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("curriculum:downloadSyllabus", { courseCode }),
 });
 
 contextBridge.exposeInMainWorld("grade", {

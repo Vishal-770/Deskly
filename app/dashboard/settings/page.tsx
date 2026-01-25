@@ -20,6 +20,7 @@ import { useSemester } from "@/components/useSemester";
 
 import { ChevronDown } from "lucide-react";
 import { Semester } from "@/types/electron/Semster.types";
+import Loader from "@/components/Loader";
 
 const SettingPage = () => {
   const router = useRouter();
@@ -82,8 +83,8 @@ const SettingPage = () => {
 
   /* ---------------- LOADING ---------------- */
 
-  if (authLoading) return <CenteredLoader text="Loading settings…" />;
-  if (!authState) return <CenteredLoader text="Redirecting…" />;
+  if (authLoading) return <Loader />;
+  if (!authState) return <Loader />;
 
   /* ---------------- UI ---------------- */
 
@@ -230,15 +231,6 @@ const Row = ({
   <div className="flex items-center justify-between gap-4">
     <span className="text-muted-foreground">{label}</span>
     {children}
-  </div>
-);
-
-const CenteredLoader = ({ text }: { text: string }) => (
-  <div className="flex h-full items-center justify-center">
-    <div className="flex flex-col items-center gap-3">
-      <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
-      <p className="text-sm text-muted-foreground">{text}</p>
-    </div>
   </div>
 );
 
