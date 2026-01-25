@@ -1,0 +1,485 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+/* -------------------- Types -------------------- */
+
+interface Faculty {
+  name: string;
+}
+
+interface AttendanceRecord {
+  classId: string;
+  courseCode: string;
+  courseTitle: string;
+  courseType: string;
+  slot: string;
+  faculty: Faculty;
+  attendedClasses: number;
+  totalClasses: number;
+  attendancePercentage: number;
+  status: string;
+}
+
+/* -------------------- Mock Data -------------------- */
+
+const mockAttendanceData: AttendanceRecord[] = [
+  {
+    classId: "1",
+    courseCode: "CS301",
+    courseTitle: "Data Structures & Algorithms",
+    courseType: "Theory",
+    slot: "A1",
+    faculty: { name: "Dr. Smith" },
+    attendedClasses: 28,
+    totalClasses: 30,
+    attendancePercentage: 93,
+    status: "Regular",
+  },
+  {
+    classId: "2",
+    courseCode: "CS302",
+    courseTitle: "Database Management Systems",
+    courseType: "Theory + Lab",
+    slot: "B1",
+    faculty: { name: "Prof. Johnson" },
+    attendedClasses: 25,
+    totalClasses: 28,
+    attendancePercentage: 89,
+    status: "Regular",
+  },
+  {
+    classId: "3",
+    courseCode: "CS303",
+    courseTitle: "Operating Systems",
+    courseType: "Theory",
+    slot: "C1",
+    faculty: { name: "Dr. Williams" },
+    attendedClasses: 18,
+    totalClasses: 26,
+    attendancePercentage: 69,
+    status: "Shortage",
+  },
+  {
+    classId: "4",
+    courseCode: "CS304",
+    courseTitle: "Computer Networks",
+    courseType: "Theory + Lab",
+    slot: "D1",
+    faculty: { name: "Prof. Brown" },
+    attendedClasses: 22,
+    totalClasses: 24,
+    attendancePercentage: 92,
+    status: "Regular",
+  },
+  {
+    classId: "5",
+    courseCode: "MA201",
+    courseTitle: "Probability & Statistics",
+    courseType: "Theory",
+    slot: "E1",
+    faculty: { name: "Dr. Davis" },
+    attendedClasses: 20,
+    totalClasses: 22,
+    attendancePercentage: 91,
+    status: "Regular",
+  },
+];
+
+/* -------------------- Components -------------------- */
+
+function CircularProgress({
+  percentage,
+  size = 56,
+}: {
+  percentage: number;
+  size?: number;
+}) {
+  const colors =
+    percentage >= 75
+      ? { progress: "text-green-500", text: "text-foreground" }
+      : percentage >= 60
+        ? { progress: "text-yellow-500", text: "text-yellow-500" }
+        : { progress: "text-destructive", text: "text-destructive" };
+  const strokeWidth = 4;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg className="transform -rotate-90" width={size} height={size}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          fill="none"
+          className="text-secondary"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          className={colors.progress}
+          style={{ transition: "stroke-dashoffset 0.5s ease-in-out" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className={`text-xs font-semibold ${colors.text}`}>
+          {percentage}%
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function calculateAttendanceNeeded(
+  attended: number,
+  total: number,
+  minPercentage = 75,
+) {
+  const currentPercentage = (attended / total) * 100;
+
+  if (currentPercentage >= minPercentage) {
+    // Calculate how many classes can be skipped while staying at 75%
+    // Formula: (attended) / (total + x) >= 0.75
+    // attended >= 0.75 * (total + x)
+    // attended / 0.75 >= total + x
+    // x <= (attended / 0.75) - total
+    const canSkip = Math.floor(attended / (minPercentage / 100) - total);
+    return { canSkip: Math.max(0, canSkip), needToAttend: 0, isSafe: true };
+  } else {
+    // Calculate how many consecutive classes need to be attended to reach 75%
+    // Formula: (attended + x) / (total + x) >= 0.75
+    // attended + x >= 0.75 * total + 0.75 * x
+    // 0.25 * x >= 0.75 * total - attended
+    // x >= (0.75 * total - attended) / 0.25
+    // x >= 3 * total - 4 * attended
+    const needToAttend =
+      Math.ceil((minPercentage / 100) * total - attended) /
+      (1 - minPercentage / 100);
+    const actualNeed = Math.ceil(3 * total - 4 * attended);
+    return { canSkip: 0, needToAttend: Math.max(0, actualNeed), isSafe: false };
+  }
+}
+
+function AttendanceRow({ record }: { record: AttendanceRecord }) {
+  const attendanceStatus = calculateAttendanceNeeded(
+    record.attendedClasses,
+    record.totalClasses,
+  );
+  let badgeClass = "bg-green-500/15 text-green-500";
+  let hintColor = "text-green-500";
+  let mobileColor = "text-green-500";
+  if (record.attendancePercentage < 60) {
+    badgeClass = "bg-destructive/15 text-destructive";
+    hintColor = "text-destructive";
+    mobileColor = "text-destructive";
+  } else if (record.attendancePercentage < 75) {
+    badgeClass = "bg-yellow-500/15 text-yellow-500";
+    hintColor = "text-yellow-500";
+    mobileColor = "text-yellow-500";
+  }
+
+  return (
+    <div className="group relative">
+      <div className="flex items-center justify-between py-5 px-6 hover:bg-secondary/30 transition-colors duration-200 cursor-default">
+        <div className="flex items-center gap-6 flex-1 min-w-0">
+          <CircularProgress percentage={record.attendancePercentage} />
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-xs font-mono text-muted-foreground tracking-wider">
+                {record.courseCode}
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                {record.courseType}
+              </span>
+            </div>
+            <h3 className="text-foreground font-medium truncate pr-4">
+              {record.courseTitle}
+            </h3>
+            {/* Attendance hint */}
+            <p className={`text-xs mt-1 ${hintColor}`}>
+              {attendanceStatus.isSafe
+                ? attendanceStatus.canSkip > 0
+                  ? `Can skip ${attendanceStatus.canSkip} class${attendanceStatus.canSkip > 1 ? "es" : ""}`
+                  : "On track - attend next class"
+                : `Need ${attendanceStatus.needToAttend} more class${attendanceStatus.needToAttend > 1 ? "es" : ""} to reach 75%`}
+            </p>
+          </div>
+        </div>
+
+        <div className="hidden md:flex items-center gap-8 text-sm">
+          <div className="text-right w-24">
+            <p className="text-muted-foreground text-xs mb-0.5">Slot</p>
+            <p className="font-mono text-foreground">{record.slot}</p>
+          </div>
+
+          <div className="text-right w-32">
+            <p className="text-muted-foreground text-xs mb-0.5">Faculty</p>
+            <p className="text-foreground truncate">{record.faculty.name}</p>
+          </div>
+
+          <div className="text-right w-20">
+            <p className="text-muted-foreground text-xs mb-0.5">Classes</p>
+            <p className="font-mono text-foreground">
+              {record.attendedClasses}
+              <span className="text-muted-foreground">
+                /{record.totalClasses}
+              </span>
+            </p>
+          </div>
+
+          <div className="w-28 text-right">
+            <span
+              className={`text-xs font-medium px-2.5 py-1 rounded-full ${badgeClass}`}
+            >
+              {attendanceStatus.isSafe
+                ? attendanceStatus.canSkip > 0
+                  ? `+${attendanceStatus.canSkip} skip`
+                  : "Safe"
+                : `-${attendanceStatus.needToAttend} need`}
+            </span>
+          </div>
+        </div>
+
+        {/* Mobile view details */}
+        <div className="md:hidden flex items-center gap-4">
+          <div className="text-right">
+            <p className="font-mono text-sm text-foreground">
+              {record.attendedClasses}/{record.totalClasses}
+            </p>
+            <span className={`text-xs ${mobileColor}`}>
+              {attendanceStatus.isSafe
+                ? `+${attendanceStatus.canSkip} skip`
+                : `-${attendanceStatus.needToAttend} need`}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Subtle divider */}
+      <div className="absolute bottom-0 left-6 right-6 h-px bg-border/50" />
+    </div>
+  );
+}
+
+function StatsOverview({ data }: { data: AttendanceRecord[] }) {
+  const totalClasses = data.reduce((sum, r) => sum + r.totalClasses, 0);
+  const attendedClasses = data.reduce((sum, r) => sum + r.attendedClasses, 0);
+  const overallPercentage = Math.round((attendedClasses / totalClasses) * 100);
+  const lowAttendance = data.filter((r) => r.attendancePercentage < 60).length;
+
+  return (
+    <div className="flex items-center gap-12 py-8 px-6">
+      <div className="flex items-center gap-4">
+        <CircularProgress percentage={overallPercentage} size={72} />
+        <div>
+          <p className="text-3xl font-semibold text-foreground tracking-tight">
+            {overallPercentage}%
+          </p>
+          <p className="text-sm text-muted-foreground">Overall Attendance</p>
+        </div>
+      </div>
+
+      <div className="h-12 w-px bg-border" />
+
+      <div className="flex gap-10">
+        <div>
+          <p className="text-2xl font-semibold text-foreground font-mono">
+            {data.length}
+          </p>
+          <p className="text-sm text-muted-foreground">Courses</p>
+        </div>
+
+        <div>
+          <p className="text-2xl font-semibold text-foreground font-mono">
+            {attendedClasses}
+            <span className="text-muted-foreground text-lg">
+              /{totalClasses}
+            </span>
+          </p>
+          <p className="text-sm text-muted-foreground">Classes Attended</p>
+        </div>
+
+        {lowAttendance > 0 && (
+          <div>
+            <p className="text-2xl font-semibold text-destructive font-mono">
+              {lowAttendance}
+            </p>
+            <p className="text-sm text-muted-foreground">Need Attention</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Page -------------------- */
+
+export default function AttendancePage() {
+  const [attendanceData, setAttendanceData] = useState<
+    AttendanceRecord[] | null
+  >(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      try {
+        // Check if running in Electron context
+        if (
+          typeof window !== "undefined" &&
+          "attendance" in window &&
+          window.attendance
+        ) {
+          const result = await (
+            window as {
+              attendance: {
+                get: () => Promise<{
+                  success: boolean;
+                  data?: AttendanceRecord[];
+                  error?: string;
+                }>;
+              };
+            }
+          ).attendance.get();
+          if (result.success) {
+            setAttendanceData(result.data ?? null);
+          } else {
+            setError(result.error || "Failed to fetch attendance");
+          }
+        } else {
+          // Use mock data for preview
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          setAttendanceData(mockAttendanceData);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAttendance();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 rounded-full border-2 border-secondary" />
+            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-accent animate-spin" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Loading attendance data...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full bg-destructive/15 flex items-center justify-center mx-auto mb-4">
+            <svg
+              className="w-6 h-6 text-destructive"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          </div>
+          <p className="text-destructive font-medium">Error</p>
+          <p className="text-sm text-muted-foreground mt-1">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!attendanceData || attendanceData.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
+            <svg
+              className="w-6 h-6 text-muted-foreground"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <p className="text-foreground font-medium">No Data</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            No attendance records found
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Title Section */}
+        <div className="mb-2">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+            Attendance
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Current semester overview
+          </p>
+        </div>
+
+        {/* Stats Overview */}
+        <StatsOverview data={attendanceData} />
+
+        {/* Divider */}
+        <div className="h-px bg-border my-6" />
+
+        {/* Course List Header */}
+        <div className="flex items-center justify-between px-6 py-3 text-xs text-muted-foreground uppercase tracking-wider">
+          <span>Course</span>
+          <div className="hidden md:flex items-center gap-8">
+            <span className="w-24 text-right">Slot</span>
+            <span className="w-32 text-right">Faculty</span>
+            <span className="w-20 text-right">Classes</span>
+            <span className="w-28 text-right">Margin</span>
+          </div>
+        </div>
+
+        {/* Course List */}
+        <div className="rounded-lg overflow-hidden">
+          {attendanceData.map((record) => (
+            <AttendanceRow key={record.classId} record={record} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

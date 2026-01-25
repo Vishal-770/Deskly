@@ -5,8 +5,10 @@ import {
   Course,
   CoursesResponse,
   WeeklyScheduleResponse,
+  AttendanceResponse,
 } from "../../types/renderer/Course.types";
 import { CGPAData } from "../../types/electron/system.types";
+import { WeeklySchedule } from "../../types/electron/TimeTable.types";
 import {
   BarChart,
   Bar,
@@ -56,6 +58,7 @@ export default function Dashboard() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [semester, setSemester] = useState("");
   const [cgpaData, setCgpaData] = useState<CGPAData | null>(null);
+  const [timetable, setTimetable] = useState<WeeklySchedule | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { getSemester } = useSemester();
@@ -101,6 +104,22 @@ export default function Dashboard() {
       ]
     : [];
 
+  /* -------------------- Today's Classes -------------------- */
+
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const today = days[new Date().getDay()];
+  const todaysClasses = timetable
+    ? timetable[today as keyof WeeklySchedule] || []
+    : [];
+
   /* -------------------- Fetch -------------------- */
 
   useEffect(() => {
@@ -115,6 +134,7 @@ export default function Dashboard() {
 
         const content = await window.content.fetch();
         const cgpa = await window.content.cgpa();
+        const timetableResult = await window.timetable.currentSemester();
 
         if (cancelled) return;
 
@@ -127,6 +147,10 @@ export default function Dashboard() {
 
         if (cgpa?.success && cgpa.cgpaData) {
           setCgpaData(cgpa.cgpaData);
+        }
+
+        if (timetableResult?.success && timetableResult.data) {
+          setTimetable(timetableResult.data);
         }
       } catch (e) {
         console.error(e);
@@ -147,10 +171,8 @@ export default function Dashboard() {
     try {
       const result: WeeklyScheduleResponse =
         await window.timetable.currentSemester();
-      console.log("Timetable result:", result);
       alert(`Timetable fetched: ${result.success ? "Success" : "Failed"}`);
     } catch (e) {
-      console.error("Timetable error:", e);
       alert("Error fetching timetable");
     }
   };
@@ -158,11 +180,18 @@ export default function Dashboard() {
   const testCourses = async () => {
     try {
       const result: CoursesResponse = await window.timetable.courses();
-      console.log("Courses result:", result);
       alert(`Courses fetched: ${result.success ? "Success" : "Failed"}`);
     } catch (e) {
-      console.error("Courses error:", e);
       alert("Error fetching courses");
+    }
+  };
+
+  const testAttendance = async () => {
+    try {
+      const result: AttendanceResponse = await window.timetable.attendance();
+      alert(`Attendance fetched: ${result.success ? "Success" : "Failed"}`);
+    } catch (e) {
+      alert("Error fetching attendance");
     }
   };
 
@@ -212,9 +241,52 @@ export default function Dashboard() {
             <Button onClick={testTimetable} variant="outline">
               Test Timetable
             </Button>
+            <Button onClick={testAttendance} variant="outline">
+              Test Attendance
+            </Button>
           </div>
         </div>
       </header>
+
+      {/* Today's Classes */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">Today&apos;s Classes ({today})</h2>
+        {todaysClasses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {todaysClasses.map((cls, index) => (
+              <div key={index} className="p-4 border rounded-lg bg-card">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="font-semibold text-sm">
+                    {cls.courseCode}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {cls.slot}
+                  </span>
+                </div>
+                <p className="text-sm mb-1">{cls.courseTitle}</p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  {cls.courseType}
+                </p>
+                <div className="flex justify-between text-xs">
+                  <span>
+                    {cls.startTime} - {cls.endTime}
+                  </span>
+                  <span>{cls.venue}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {cls.faculty}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground">
+            No classes scheduled for today.
+          </p>
+        )}
+      </section>
+
+      <Divider />
 
       {/* Stats */}
       {cgpaData && (

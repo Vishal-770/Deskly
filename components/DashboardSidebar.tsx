@@ -3,12 +3,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Home,
   BookOpen,
   GraduationCap,
   Settings,
   User,
   Calendar,
+  CheckCircle,
 } from "lucide-react";
 import { useAuth } from "./useAuth";
 
@@ -32,28 +32,18 @@ const DashboardSidebar = () => {
   return (
     <div className="fixed left-0 top-8 w-16 h-full bg-card/98 backdrop-blur-sm text-card-foreground py-4 border-r border-border/50 overflow-y-auto shadow-lg flex flex-col items-center">
       {/* Logo */}
-      <div className="mb-6 p-2 rounded-lg hover:bg-muted transition-all duration-200 cursor-pointer group relative">
+      <Link
+        href="/dashboard"
+        className={`mb-6 p-2 rounded-lg hover:bg-muted transition-all duration-200 cursor-pointer group relative ${pathname === "/dashboard" ? "bg-primary/10 text-primary border-l-4 border-primary" : ""}`}
+      >
         <img src="/app-logo.png" className="w-6 h-6" alt="Logo" />
         <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
           <span className="text-sm font-medium">Deskly</span>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation Icons */}
       <nav className="space-y-2 flex-1">
-        <Link
-          href="/dashboard"
-          className={`relative p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group ${
-            pathname === "/dashboard"
-              ? "bg-primary/10 text-primary border-l-4 border-primary"
-              : ""
-          }`}
-        >
-          <Home className="w-5 h-5" />
-          <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-            <span className="text-sm font-medium">Dashboard</span>
-          </div>
-        </Link>
         <Link
           href="/dashboard/courses"
           className={`relative p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group ${
@@ -91,6 +81,19 @@ const DashboardSidebar = () => {
           <GraduationCap className="w-5 h-5" />
           <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
             <span className="text-sm font-medium">Grades</span>
+          </div>
+        </Link>
+        <Link
+          href="/dashboard/attendance"
+          className={`relative p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group ${
+            pathname === "/dashboard/attendance"
+              ? "bg-primary/10 text-primary border-l-4 border-primary"
+              : ""
+          }`}
+        >
+          <CheckCircle className="w-5 h-5" />
+          <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            <span className="text-sm font-medium">Attendance</span>
           </div>
         </Link>
         <Link

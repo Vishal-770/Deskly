@@ -27,3 +27,9 @@ export interface WeeklyScheduleResponse {
   data?: WeeklySchedule;
   error?: string;
 }
+
+export interface AttendanceResponse {
+  success: boolean;
+  data?: string;
+  error?: string;
+}

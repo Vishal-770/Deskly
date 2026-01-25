@@ -1,5 +1,8 @@
 import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
 import { Semester } from "@/types/electron/Semster.types";
+import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
+import { CourseDetails } from "@/types/electron/Course.types";
+import { WeeklySchedule } from "@/types/electron/TimeTable.types";
 import { contextBridge, ipcRenderer } from "electron";
 
 console.log("Preload script loaded");
@@ -33,10 +36,12 @@ contextBridge.exposeInMainWorld("electron", {
   },
 });
 
-contextBridge.exposeInMainWorld("timetable", {
-  get: () => ipcRenderer.invoke("timetable:get"),
-  courses: () => ipcRenderer.invoke("timetable:courses"),
-  currentSemester: () => ipcRenderer.invoke("timetable:currentSemester"),
+contextBridge.exposeInMainWorld("attendance", {
+  get: (): Promise<{
+    success: boolean;
+    data?: AttendanceRecord[];
+    error?: string;
+  }> => ipcRenderer.invoke("timetable:attendance"),
 });
 
 contextBridge.exposeInMainWorld("login", {
@@ -151,4 +156,22 @@ contextBridge.exposeInMainWorld("auth", {
     semesters?: Semester[];
     error?: string;
   }> => ipcRenderer.invoke("auth:getSemesters"),
+});
+
+contextBridge.exposeInMainWorld("timetable", {
+  courses: (): Promise<{
+    success: boolean;
+    data?: CourseDetails[];
+    error?: string;
+  }> => ipcRenderer.invoke("timetable:courses"),
+  currentSemester: (): Promise<{
+    success: boolean;
+    data?: WeeklySchedule;
+    error?: string;
+  }> => ipcRenderer.invoke("timetable:currentSemester"),
+  get: (): Promise<{
+    success: boolean;
+    semesters?: Semester[];
+    error?: string;
+  }> => ipcRenderer.invoke("timetable:get"),
 });

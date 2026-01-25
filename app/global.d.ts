@@ -3,10 +3,12 @@ import {
   Course,
   CoursesResponse,
   WeeklyScheduleResponse,
+  AttendanceResponse,
 } from "@/types/renderer/Course.types";
 import { Semester } from "@/types/electron/Semster.types";
 import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
 import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
+import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
 
 declare global {
   interface Window {
@@ -25,6 +27,7 @@ declare global {
       }>;
       courses: () => Promise<CoursesResponse>;
       currentSemester: () => Promise<WeeklyScheduleResponse>;
+      attendance: () => Promise<AttendanceResponse>;
     };
     login: {
       authenticate: (body: { username: string; password: string }) => Promise<{
@@ -79,6 +82,13 @@ declare global {
       getExamGradeView: () => Promise<{
         success: boolean;
         data?: StudentHistoryData;
+        error?: string;
+      }>;
+    };
+    attendance: {
+      get: () => Promise<{
+        success: boolean;
+        data?: AttendanceRecord[];
         error?: string;
       }>;
     };

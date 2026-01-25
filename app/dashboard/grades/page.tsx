@@ -11,29 +11,30 @@ import {
   PieChart,
   Pie,
   Cell,
+  ResponsiveContainer,
+  Tooltip,
 } from "recharts";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { Search, ChevronDown } from "lucide-react";
 
-/* -------------------- Helpers -------------------- */
+/* -------------------- Helper Components -------------------- */
 
-const Divider = () => <div className="h-px w-full bg-border my-10" />;
-
-const InfoRow = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) => (
-  <div className="flex justify-between border-b py-2 text-sm">
-    <span className="text-muted-foreground">{label}</span>
-    <span className="font-medium">{value}</span>
-  </div>
-);
+const GradeBadge = ({ grade }: { grade: string }) => {
+  const colors: Record<string, string> = {
+    S: "text-[oklch(0.75_0.15_200)]",
+    A: "text-[oklch(0.8_0.15_145)]",
+    B: "text-[oklch(0.85_0.12_85)]",
+    C: "text-[oklch(0.8_0.15_60)]",
+    D: "text-[oklch(0.75_0.2_30)]",
+    F: "text-[oklch(0.65_0.2_25)]",
+  };
+  return (
+    <span
+      className={`font-bold text-base ${colors[grade] || "text-muted-foreground"}`}
+    >
+      {grade}
+    </span>
+  );
+};
 
 /* -------------------- Page -------------------- */
 
@@ -41,6 +42,8 @@ export default function GradePage() {
   const [gradeData, setGradeData] = useState<StudentHistoryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState<string>("all");
 
   useEffect(() => {
     const fetchGrades = async () => {
@@ -57,16 +60,18 @@ export default function GradePage() {
         setLoading(false);
       }
     };
-
     fetchGrades();
   }, []);
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
-          <span className="text-muted-foreground">Loading grades…</span>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative w-8 h-8">
+            <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+            <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          </div>
+          <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -74,20 +79,18 @@ export default function GradePage() {
 
   if (error || !gradeData) {
     return (
-      <div className="h-full flex items-center justify-center text-center">
-        <p className="text-destructive">{error || "No data available"}</p>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-sm text-destructive">
+          {error || "No data available"}
+        </p>
       </div>
     );
   }
 
-  /* -------------------- Charts -------------------- */
-
-  const gradeDistributionData = Object.entries(
-    gradeData.cgpa.gradeDistribution,
-  ).map(([grade, count]) => ({
-    grade: grade.toUpperCase(),
-    count,
-  }));
+  /* Chart Data */
+  const gradeDistributionData = Object.entries(gradeData.cgpa.gradeDistribution)
+    .filter(([, count]) => count > 0)
+    .map(([grade, count]) => ({ grade, count }));
 
   const creditsBarData = gradeData.curriculum.details.map((d) => ({
     category: d.category,
@@ -95,174 +98,307 @@ export default function GradePage() {
     required: d.creditsRequired,
   }));
 
-  /* -------------------- UI -------------------- */
+  const completionPct = Math.round(
+    (gradeData.curriculum.summary.totalEarned /
+      gradeData.curriculum.summary.totalRequired) *
+      100,
+  );
+
+  const filteredGrades = gradeData.grades.filter((g) => {
+    const matchSearch =
+      g.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      g.courseTitle.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchFilter =
+      filterType === "all" ||
+      g.courseType.toLowerCase() === filterType.toLowerCase();
+    return matchSearch && matchFilter;
+  });
+
+  const courseTypes = [
+    "all",
+    ...Array.from(new Set(gradeData.grades.map((g) => g.courseType))),
+  ];
+
+  const CHART_COLORS = [
+    "oklch(0.7 0.15 200)",
+    "oklch(0.75 0.15 145)",
+    "oklch(0.8 0.12 85)",
+    "oklch(0.75 0.15 60)",
+    "oklch(0.7 0.2 30)",
+  ];
 
   return (
-    <div className="h-full w-full px-6 lg:px-10 py-6 space-y-14">
-      {/* ================= HEADER ================= */}
-      <header className="space-y-1">
-        <h1 className="text-3xl font-bold">Academic Performance</h1>
-        <p className="text-muted-foreground">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <header className="space-y-2 mb-8 sm:mb-10">
+        <h1 className="text-2xl sm:text-3xl font-bold">Academic Performance</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Detailed grade & curriculum analysis
         </p>
       </header>
 
-      {/* ================= PROFILE ================= */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">Student Profile</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-3">
-          <InfoRow label="Name" value={gradeData.profile.name} />
-          <InfoRow label="Register Number" value={gradeData.profile.regNo} />
-          <InfoRow label="Programme" value={gradeData.profile.programme} />
-          <InfoRow label="Gender" value={gradeData.profile.gender} />
-          <InfoRow label="Year Joined" value={gradeData.profile.yearJoined} />
-          <InfoRow label="School" value={gradeData.profile.school} />
-          <InfoRow label="Campus" value={gradeData.profile.campus} />
+      {/* Hero Stats */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 sm:gap-8 mb-8 sm:mb-10">
+        <div className="flex items-baseline gap-3">
+          <span className="text-5xl sm:text-6xl font-bold text-primary tracking-tight">
+            {gradeData.cgpa.cgpa.toFixed(2)}
+          </span>
+          <span className="text-base sm:text-lg text-muted-foreground">
+            CGPA
+          </span>
         </div>
-      </section>
-
-      <Divider />
-
-      {/* ================= CGPA OVERVIEW ================= */}
-      <section className="space-y-8">
-        <h2 className="text-2xl font-semibold">CGPA Overview</h2>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">
-          {/* CGPA */}
-          <div className="text-center space-y-1">
-            <p className="text-muted-foreground">Current CGPA</p>
-            <p className="text-4xl font-bold text-primary">
-              {gradeData.cgpa.cgpa}
-            </p>
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-10 text-sm">
+          <div>
+            <span className="text-xl sm:text-2xl font-semibold text-foreground">
+              {gradeData.cgpa.creditsEarned}
+            </span>
+            <span className="text-muted-foreground ml-1">
+              / {gradeData.cgpa.creditsRegistered} credits
+            </span>
           </div>
-
-          {/* Credits */}
-          <div className="space-y-3">
-            <InfoRow
-              label="Credits Earned"
-              value={gradeData.cgpa.creditsEarned}
-            />
-            <InfoRow
-              label="Credits Registered"
-              value={gradeData.cgpa.creditsRegistered}
-            />
+          <div>
+            <span className="text-xl sm:text-2xl font-semibold text-foreground">
+              {completionPct}%
+            </span>
+            <span className="text-muted-foreground ml-1">complete</span>
           </div>
-
-          {/* Grade Pie */}
-          <ChartContainer
-            config={{ count: { label: "Count" } }}
-            className="h-[260px]"
-          >
-            <PieChart>
-              <Pie
-                data={gradeDistributionData}
-                dataKey="count"
-                nameKey="grade"
-                innerRadius={60}
-                outerRadius={100}
-              >
-                {gradeDistributionData.map((_, i) => (
-                  <Cell key={i} fill={`var(--chart-${(i % 5) + 1})`} />
-                ))}
-              </Pie>
-              <ChartTooltip content={<ChartTooltipContent />} />
-            </PieChart>
-          </ChartContainer>
+          <div>
+            <span className="text-xl sm:text-2xl font-semibold text-foreground">
+              {gradeData.grades.length}
+            </span>
+            <span className="text-muted-foreground ml-1">courses</span>
+          </div>
         </div>
-      </section>
+      </div>
 
-      <Divider />
+      {/* Divider */}
+      <div className="h-px bg-border mb-6 sm:mb-8" />
 
-      {/* ================= CURRICULUM ================= */}
-      <section className="space-y-8">
-        <h2 className="text-2xl font-semibold">Curriculum Progress</h2>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          {/* Summary */}
-          <div className="space-y-3">
-            <InfoRow
-              label="Total Credits Required"
-              value={gradeData.curriculum.summary.totalRequired}
-            />
-            <InfoRow
-              label="Total Credits Earned"
-              value={gradeData.curriculum.summary.totalEarned}
-            />
-          </div>
-
-          {/* Credits Chart */}
-          <ChartContainer
-            config={{
-              earned: { label: "Earned" },
-              required: { label: "Required" },
-            }}
-            className="h-[260px]"
-          >
-            <BarChart data={creditsBarData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category" />
-              <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar
-                dataKey="earned"
-                fill="var(--chart-1)"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="required"
-                fill="var(--chart-2)"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ChartContainer>
-        </div>
-      </section>
-
-      <Divider />
-
-      {/* ================= GRADE TABLE ================= */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-semibold">Grade History</h2>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm border-collapse">
-            <thead>
-              <tr className="border-b bg-muted">
-                {[
-                  "Sl",
-                  "Code",
-                  "Title",
-                  "Type",
-                  "Credits",
-                  "Grade",
-                  "Exam",
-                  "Result",
-                  "Distribution",
-                ].map((h) => (
-                  <th key={h} className="px-3 py-3 text-left font-medium">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {gradeData.grades.map((g, i) => (
-                <tr key={i} className="border-b hover:bg-muted/50">
-                  <td className="px-3 py-2">{g.slNo}</td>
-                  <td className="px-3 py-2 font-mono">{g.courseCode}</td>
-                  <td className="px-3 py-2">{g.courseTitle}</td>
-                  <td className="px-3 py-2">{g.courseType}</td>
-                  <td className="px-3 py-2 text-center">{g.credits}</td>
-                  <td className="px-3 py-2 font-bold">{g.grade}</td>
-                  <td className="px-3 py-2">{g.examMonth}</td>
-                  <td className="px-3 py-2">{g.resultDeclared}</td>
-                  <td className="px-3 py-2">{g.courseDistribution}</td>
-                </tr>
+      {/* Charts Row */}
+      <div className="space-y-6 sm:space-y-8 mb-8 sm:mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+          {/* Grade Distribution */}
+          <div>
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+              Grade Distribution
+            </h3>
+            <div className="h-[160px] sm:h-[180px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={gradeDistributionData}
+                    dataKey="count"
+                    nameKey="grade"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={45}
+                    outerRadius={70}
+                    strokeWidth={0}
+                  >
+                    {gradeDistributionData.map((_, i) => (
+                      <Cell
+                        key={`cell-${i}`}
+                        fill={CHART_COLORS[i % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--card)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 6,
+                      fontSize: 12,
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-4 mt-2">
+              {gradeDistributionData.map((d, i) => (
+                <div key={d.grade} className="flex items-center gap-1.5">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
+                    }}
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {d.grade}
+                  </span>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
+
+          {/* Credits by Category */}
+          <div>
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+              Credits by Category
+            </h3>
+            <div className="h-[160px] sm:h-[180px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={creditsBarData} barGap={2}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--border)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="category"
+                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={30}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--card)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 6,
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar
+                    dataKey="earned"
+                    fill={CHART_COLORS[0]}
+                    radius={[3, 3, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="required"
+                    fill="var(--muted)"
+                    radius={[3, 3, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
-      </section>
+
+        {/* Curriculum Progress */}
+        <div>
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+            Curriculum Progress
+          </h3>
+          <div className="space-y-4">
+            {gradeData.curriculum.details.map((d) => {
+              const pct = Math.round(
+                (d.creditsEarned / d.creditsRequired) * 100,
+              );
+              return (
+                <div key={d.category}>
+                  <div className="flex justify-between text-xs mb-1.5">
+                    <span className="text-muted-foreground">{d.category}</span>
+                    <span className="text-foreground font-medium">
+                      {d.creditsEarned}/{d.creditsRequired}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-5 pt-4 border-t border-border flex justify-between text-xs">
+            <span className="text-muted-foreground">Total</span>
+            <span className="text-foreground font-medium">
+              {gradeData.curriculum.summary.totalEarned}/
+              {gradeData.curriculum.summary.totalRequired}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-border mb-4 sm:mb-6" />
+
+      {/* Search & Filter */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Grade History
+        </h3>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full sm:w-44 h-8 pl-8 pr-3 text-xs bg-secondary border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground"
+            />
+          </div>
+          <div className="relative">
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="h-8 pl-3 pr-7 text-xs bg-secondary border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
+            >
+              {courseTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type === "all" ? "All" : type}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* Grade List */}
+      <div className="space-y-1">
+        {filteredGrades.map((g, idx) => (
+          <div
+            key={g.slNo}
+            className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-3 px-4 rounded-lg hover:bg-secondary/50 transition-colors group"
+          >
+            <div className="flex items-center gap-4 sm:gap-2 flex-1">
+              <span className="w-6 text-xs text-muted-foreground">
+                {idx + 1}
+              </span>
+              <span className="w-16 sm:w-20 font-mono text-xs text-muted-foreground truncate">
+                {g.courseCode}
+              </span>
+              <span className="flex-1 text-sm text-foreground min-w-0">
+                <span className="block sm:hidden font-medium">
+                  {g.courseTitle}
+                </span>
+                <span className="hidden sm:block">{g.courseTitle}</span>
+              </span>
+            </div>
+            <div className="flex items-center justify-between sm:justify-end gap-4">
+              <span className="text-xs text-muted-foreground sm:hidden">
+                {g.courseType} • {g.credits}cr
+              </span>
+              <span className="w-16 text-xs text-muted-foreground hidden sm:block">
+                {g.courseType}
+              </span>
+              <span className="w-8 text-xs text-center text-muted-foreground hidden sm:block">
+                {g.credits}cr
+              </span>
+              <span className="w-8 text-center">
+                <GradeBadge grade={g.grade} />
+              </span>
+              <span className="w-20 text-xs text-muted-foreground text-right hidden sm:block">
+                {g.examMonth}
+              </span>
+            </div>
+          </div>
+        ))}
+        {filteredGrades.length === 0 && (
+          <div className="py-10 text-center text-sm text-muted-foreground">
+            No courses found
+          </div>
+        )}
+      </div>
     </div>
   );
 }
