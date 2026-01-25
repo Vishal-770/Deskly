@@ -27,7 +27,6 @@ import {
 } from "../../components/ui/chart";
 import { useSemester } from "@/components/useSemester";
 import Loader from "../../components/Loader";
-import { Button } from "@/components/ui/button";
 
 /* -------------------- Small Helpers -------------------- */
 
@@ -188,19 +187,6 @@ export default function Dashboard() {
     );
   }
 
-  const testCurriculum = async () => {
-    try {
-      const result = await window.curriculum.get();
-      if (result.success) {
-        console.log("Curriculum HTML:", result.html);
-      } else {
-        console.error("Error:", result.error);
-      }
-    } catch (e) {
-      console.error("Error:", e instanceof Error ? e.message : String(e));
-    }
-  };
-
   /* -------------------- UI -------------------- */
 
   return (
@@ -213,7 +199,6 @@ export default function Dashboard() {
             <p className="text-muted-foreground">Semester: {semester}</p>
           )}
         </div>
-        <Button onClick={testCurriculum}>Test Curriculum</Button>
       </header>
 
       {/* Today's Classes */}

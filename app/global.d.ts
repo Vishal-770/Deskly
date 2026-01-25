@@ -12,6 +12,7 @@ import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { Category } from "@/types/electron/curriculum.types";
 import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
+import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
 
 declare global {
   interface Window {
@@ -99,6 +100,9 @@ declare global {
         message?: string;
         error?: string;
       }>;
+    };
+    contactInfo: {
+      get: () => Promise<ContactInfoResponse>;
     };
     grade: {
       getExamGradeView: () => Promise<{

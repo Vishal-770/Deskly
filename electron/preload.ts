@@ -7,6 +7,7 @@ import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
 import { Category } from "@/types/electron/curriculum.types";
 import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
+import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
 import { contextBridge, ipcRenderer } from "electron";
 
 console.log("Preload script loaded");
@@ -133,6 +134,11 @@ contextBridge.exposeInMainWorld("curriculum", {
     message?: string;
     error?: string;
   }> => ipcRenderer.invoke("curriculum:downloadSyllabus", { courseCode }),
+});
+
+contextBridge.exposeInMainWorld("contactInfo", {
+  get: (): Promise<ContactInfoResponse> =>
+    ipcRenderer.invoke("contactInfo:get"),
 });
 
 contextBridge.exposeInMainWorld("grade", {

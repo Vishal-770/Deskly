@@ -27,6 +27,13 @@ ipcMain.handle("curriculum:downloadSyllabus", async (event, args) => {
       return downloadResult;
     }
 
+    if (!downloadResult.data) {
+      return {
+        success: false,
+        error: "No data received",
+      };
+    }
+
     // Show save dialog
     const result = (await dialog.showSaveDialog({
       title: "Save Course Syllabus",
@@ -51,7 +58,10 @@ ipcMain.handle("curriculum:downloadSyllabus", async (event, args) => {
     }
 
     // Write file
-    fs.writeFileSync(result.filePath, Buffer.from(downloadResult.data));
+    fs.writeFileSync(
+      result.filePath,
+      Buffer.from(downloadResult.data as ArrayBuffer),
+    );
 
     return {
       success: true,

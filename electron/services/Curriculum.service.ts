@@ -2,20 +2,47 @@ import VTOPClient from "../../lib/electron/axios.client";
 import {
   extractCategories,
   parseCourseTable,
+  Category,
+  CourseEntry,
 } from "../../lib/electron/parsers/Curriculum.parser";
 import { getAuthTokens } from "./storeAuth.service";
+import { handleAuthErrorAndRetry, AuthTokens } from "./errorHandler";
 
-export async function getCurriculum() {
+export interface CurriculumResponse {
+  success: boolean;
+  data?: Category[];
+  html?: string;
+  error?: string;
+}
+
+export interface CurriculumCategoryResponse {
+  success: boolean;
+  data?: CourseEntry[];
+  html?: string;
+  error?: string;
+}
+
+export interface SyllabusDownloadResponse {
+  success: boolean;
+  data?: ArrayBuffer;
+  filename?: string;
+  contentType?: string;
+  error?: string;
+}
+
+export async function getCurriculum(
+  tokens?: AuthTokens,
+): Promise<CurriculumResponse> {
   try {
-    const tokens = getAuthTokens();
-    if (!tokens) {
+    const authTokens = tokens || getAuthTokens();
+    if (!authTokens) {
       return {
         success: false,
         error: "No auth tokens found",
       };
     }
 
-    const { cookies, authorizedID, csrf } = tokens;
+    const { cookies, authorizedID, csrf } = authTokens;
 
     const client = VTOPClient();
 
@@ -44,25 +71,33 @@ export async function getCurriculum() {
       html: curriculumRes.data,
     };
   } catch (err: unknown) {
-    console.error(err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    try {
+      return await handleAuthErrorAndRetry(err, () => getCurriculum());
+    } catch (handledErr) {
+      console.error("Get curriculum error:", handledErr);
+      return {
+        success: false,
+        error:
+          handledErr instanceof Error ? handledErr.message : String(handledErr),
+      };
+    }
   }
 }
 
-export async function getCurriculumCategoryView(categoryId: string) {
+export async function getCurriculumCategoryView(
+  categoryId: string,
+  tokens?: AuthTokens,
+): Promise<CurriculumCategoryResponse> {
   try {
-    const tokens = getAuthTokens();
-    if (!tokens) {
+    const authTokens = tokens || getAuthTokens();
+    if (!authTokens) {
       return {
         success: false,
         error: "No auth tokens found",
       };
     }
 
-    const { cookies, authorizedID, csrf } = tokens;
+    const { cookies, authorizedID, csrf } = authTokens;
 
     const client = VTOPClient();
 
@@ -91,25 +126,35 @@ export async function getCurriculumCategoryView(categoryId: string) {
       html: categoryRes.data,
     };
   } catch (err: unknown) {
-    console.error(err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    try {
+      return await handleAuthErrorAndRetry(err, () =>
+        getCurriculumCategoryView(categoryId),
+      );
+    } catch (handledErr) {
+      console.error("Get curriculum category view error:", handledErr);
+      return {
+        success: false,
+        error:
+          handledErr instanceof Error ? handledErr.message : String(handledErr),
+      };
+    }
   }
 }
 
-export async function downloadCourseSyllabus(courseCode: string) {
+export async function downloadCourseSyllabus(
+  courseCode: string,
+  tokens?: AuthTokens,
+): Promise<SyllabusDownloadResponse> {
   try {
-    const tokens = getAuthTokens();
-    if (!tokens) {
+    const authTokens = tokens || getAuthTokens();
+    if (!authTokens) {
       return {
         success: false,
         error: "No auth tokens found",
       };
     }
 
-    const { cookies, authorizedID, csrf } = tokens;
+    const { cookies, authorizedID, csrf } = authTokens;
 
     const client = VTOPClient();
 
@@ -148,10 +193,17 @@ export async function downloadCourseSyllabus(courseCode: string) {
       contentType: response.headers["content-type"],
     };
   } catch (err: unknown) {
-    console.error(err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    try {
+      return await handleAuthErrorAndRetry(err, () =>
+        downloadCourseSyllabus(courseCode),
+      );
+    } catch (handledErr) {
+      console.error("Download course syllabus error:", handledErr);
+      return {
+        success: false,
+        error:
+          handledErr instanceof Error ? handledErr.message : String(handledErr),
+      };
+    }
   }
 }
