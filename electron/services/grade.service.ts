@@ -49,10 +49,7 @@ export async function getExamGradeView(): Promise<{
     };
   } catch (err: unknown) {
     try {
-      return await handleAuthErrorAndRetry(err, async (newTokens) => {
-        // Tokens are updated after relogin, but we fetch from store anyway
-        return getExamGradeView();
-      });
+      return await handleAuthErrorAndRetry(err, () => getExamGradeView());
     } catch (handledErr) {
       console.error("Get exam grade view error:", handledErr);
       return {

@@ -1,38 +1,48 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BookOpen, Calendar, Clock, Users } from "lucide-react";
-
+import { CoursesResponse } from "../../../types/renderer/Course.types";
+import { CourseDetails } from "../../../types/electron/Course.types";
 export default function CoursesPage() {
-  // Dummy course data
-  const courses = [
-    {
-      id: 1,
-      code: "CS101",
-      name: "Introduction to Computer Science",
-      instructor: "Dr. Smith",
-      schedule: "Mon, Wed 10:00 AM",
-      room: "Room 101",
-      credits: 3,
-    },
-    {
-      id: 2,
-      code: "MATH201",
-      name: "Calculus II",
-      instructor: "Prof. Johnson",
-      schedule: "Tue, Thu 2:00 PM",
-      room: "Room 205",
-      credits: 4,
-    },
-    {
-      id: 3,
-      code: "PHYS101",
-      name: "Physics I",
-      instructor: "Dr. Brown",
-      schedule: "Mon, Wed, Fri 11:00 AM",
-      room: "Lab 301",
-      credits: 4,
-    },
-  ];
+  const [courses, setCourses] = useState<CourseDetails[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response: CoursesResponse = await window.timetable.courses();
+        if (response.success && response.data) {
+          setCourses(response.data);
+        } else {
+          setError(response.error || "Failed to load courses");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-b-2 border-primary rounded-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center space-y-1">
+        <h1 className="text-3xl font-bold">Error</h1>
+        <p className="text-muted-foreground">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -48,7 +58,7 @@ export default function CoursesPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.map((course) => (
           <div
-            key={course.id}
+            key={course.slNo}
             className="rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="flex items-start justify-between mb-4">
@@ -60,27 +70,27 @@ export default function CoursesPage() {
               </span>
             </div>
 
-            <h3 className="text-lg font-semibold mb-2">{course.name}</h3>
+            <h3 className="text-lg font-semibold mb-2">{course.title}</h3>
 
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                <span>{course.instructor}</span>
+                <span>{course.faculty.name}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                <span>{course.schedule}</span>
+                <span>{course.slot}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                <span>{course.room}</span>
+                <span>{course.venue}</span>
               </div>
             </div>
 
             <div className="mt-4 pt-4 border-t border-border">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Credits</span>
-                <span className="font-semibold">{course.credits}</span>
+                <span className="font-semibold">{course.credits.total}</span>
               </div>
             </div>
           </div>
@@ -99,12 +109,12 @@ export default function CoursesPage() {
           </div>
           <div className="text-center p-4 bg-green-100 rounded-lg">
             <div className="text-2xl font-bold text-green-600">
-              {courses.reduce((sum, course) => sum + course.credits, 0)}
+              {courses.reduce((sum, course) => sum + course.credits.total, 0)}
             </div>
             <div className="text-sm text-muted-foreground">Total Credits</div>
           </div>
           <div className="text-center p-4 bg-blue-100 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">3</div>
+            <div className="text-2xl font-bold text-blue-600">1</div>
             <div className="text-sm text-muted-foreground">This Semester</div>
           </div>
         </div>

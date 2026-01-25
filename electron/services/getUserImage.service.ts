@@ -37,9 +37,7 @@ export async function getUserImage(tokens?: AuthTokens): Promise<{
     };
   } catch (err: unknown) {
     try {
-      return await handleAuthErrorAndRetry(err, (newTokens) =>
-        getUserImage(newTokens),
-      );
+      return await handleAuthErrorAndRetry(err, () => getUserImage());
     } catch (handledErr) {
       console.error("Get user image error:", handledErr);
       return {

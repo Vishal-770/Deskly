@@ -1,7 +1,5 @@
 import { app, BrowserWindow, ipcMain, globalShortcut } from "electron";
 import * as path from "path";
-import * as url from "url";
-import * as fs from "fs";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -14,6 +12,8 @@ export function createWindow() {
     minHeight: 400,
     minWidth: 600,
     frame: false,
+    show: false, // Hide until ready-to-show event
+    backgroundColor: "#000000", // Prevent white flash
 
     icon: path.join(app.getAppPath(), "public/app-logo.png"),
     webPreferences: {
@@ -32,7 +32,7 @@ export function createWindow() {
         responseHeaders: {
           ...details.responseHeaders,
           "Content-Security-Policy":
-            "default-src 'self' 'unsafe-inline' 'unsafe-eval' file: data:;",
+            "default-src 'self' 'unsafe-inline' 'unsafe-eval' file: data: app:;",
         },
       });
     },
@@ -45,34 +45,45 @@ export function createWindow() {
     mainWindow?.webContents.setZoomFactor(1);
   });
 
-  if (isDev) {
-    mainWindow.loadURL("http://localhost:3000");
-    mainWindow.webContents.openDevTools();
-  } else {
-    // In production, load from the out directory
-    const indexPath = path.join(__dirname, "../out/index.html");
-
-    // Check if the file exists
-    if (fs.existsSync(indexPath)) {
-      mainWindow.loadURL(
-        url.format({
-          pathname: indexPath,
-          protocol: "file:",
-          slashes: true,
-        }),
-      );
-    } else {
-      console.error("index.html not found at:", indexPath);
-    }
-  }
+  // Show window only when content is ready
+  mainWindow.once("ready-to-show", () => {
+    console.log("[Window] Content loaded, showing window");
+    mainWindow?.show();
+  });
 
   // Handle navigation errors
   mainWindow.webContents.on(
     "did-fail-load",
-    (event, errorCode, errorDescription) => {
-      console.error("Failed to load:", errorCode, errorDescription);
+    (event, errorCode, errorDescription, validatedURL) => {
+      console.error("[Window] Failed to load:", {
+        url: validatedURL,
+        errorCode,
+        errorDescription,
+      });
     },
   );
+
+  // Log when page finishes loading
+  mainWindow.webContents.on("did-finish-load", () => {
+    console.log("[Window] Page finished loading");
+  });
+
+  // Log console messages from renderer for debugging
+  mainWindow.webContents.on(
+    "console-message",
+    (event, level, message, line, sourceId) => {
+      console.log(`[Renderer Console] ${message}`);
+    },
+  );
+
+  if (isDev) {
+    mainWindow.loadURL("http://localhost:3000");
+    mainWindow.webContents.openDevTools();
+  } else {
+    // Renderer is served via the custom app:// protocol registered in main.ts
+    console.log("[Window] Loading app://index.html");
+    mainWindow.loadURL("app://index.html");
+  }
 }
 
 // IPC handlers for window controls

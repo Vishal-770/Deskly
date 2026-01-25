@@ -31,9 +31,12 @@ contextBridge.exposeInMainWorld("electron", {
     maximize: () => ipcRenderer.send("window-maximize"),
     close: () => ipcRenderer.send("window-close"),
   },
-  timetable: {
-    get: () => ipcRenderer.invoke("timetable:get"),
-  },
+});
+
+contextBridge.exposeInMainWorld("timetable", {
+  get: () => ipcRenderer.invoke("timetable:get"),
+  courses: () => ipcRenderer.invoke("timetable:courses"),
+  currentSemester: () => ipcRenderer.invoke("timetable:currentSemester"),
 });
 
 contextBridge.exposeInMainWorld("login", {
@@ -148,27 +151,4 @@ contextBridge.exposeInMainWorld("auth", {
     semesters?: Semester[];
     error?: string;
   }> => ipcRenderer.invoke("auth:getSemesters"),
-});
-
-contextBridge.exposeInMainWorld("update", {
-  onCheckingForUpdate: (callback: () => void) => {
-    ipcRenderer.on("update:checking-for-update", () => callback());
-  },
-  onUpdateAvailable: (callback: () => void) => {
-    ipcRenderer.on("update:update-available", () => callback());
-  },
-  onUpdateNotAvailable: (callback: () => void) => {
-    ipcRenderer.on("update:update-not-available", () => callback());
-  },
-  onDownloadProgress: (callback: (progress: { percent: number }) => void) => {
-    ipcRenderer.on("update:download-progress", (_, progress) =>
-      callback(progress),
-    );
-  },
-  onUpdateDownloaded: (callback: () => void) => {
-    ipcRenderer.on("update:update-downloaded", () => callback());
-  },
-  onError: (callback: (error: Error) => void) => {
-    ipcRenderer.on("update:error", (_, error) => callback(error));
-  },
 });

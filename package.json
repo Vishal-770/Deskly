@@ -27,7 +27,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "electron-store": "^11.0.2",
-    "electron-updater": "^6.7.3",
     "keytar": "^7.9.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.4",

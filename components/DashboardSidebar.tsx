@@ -2,7 +2,14 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, BookOpen, GraduationCap, Settings, User } from "lucide-react";
+import {
+  Home,
+  BookOpen,
+  GraduationCap,
+  Settings,
+  User,
+  Calendar,
+} from "lucide-react";
 import { useAuth } from "./useAuth";
 
 const DashboardSidebar = () => {
@@ -58,6 +65,19 @@ const DashboardSidebar = () => {
           <BookOpen className="w-5 h-5" />
           <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
             <span className="text-sm font-medium">Courses</span>
+          </div>
+        </Link>
+        <Link
+          href="/dashboard/timetable"
+          className={`relative p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group ${
+            pathname === "/dashboard/timetable"
+              ? "bg-primary/10 text-primary border-l-4 border-primary"
+              : ""
+          }`}
+        >
+          <Calendar className="w-5 h-5" />
+          <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            <span className="text-sm font-medium">Timetable</span>
           </div>
         </Link>
         <Link

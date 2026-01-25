@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Course } from "../../types/renderer/Course.types";
+import {
+  Course,
+  CoursesResponse,
+  WeeklyScheduleResponse,
+} from "../../types/renderer/Course.types";
 import { CGPAData } from "../../types/electron/system.types";
 import {
   BarChart,
@@ -18,6 +22,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../../components/ui/chart";
+import { Button } from "../../components/ui/button";
+import { useSemester } from "@/components/useSemester";
 
 /* -------------------- Small Helpers -------------------- */
 
@@ -52,7 +58,7 @@ export default function Dashboard() {
   const [cgpaData, setCgpaData] = useState<CGPAData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { getSemester } = useSemester();
   /* -------------------- Chart Data -------------------- */
 
   const attendanceChartConfig = {
@@ -137,6 +143,29 @@ export default function Dashboard() {
     };
   }, []);
 
+  const testTimetable = async () => {
+    try {
+      const result: WeeklyScheduleResponse =
+        await window.timetable.currentSemester();
+      console.log("Timetable result:", result);
+      alert(`Timetable fetched: ${result.success ? "Success" : "Failed"}`);
+    } catch (e) {
+      console.error("Timetable error:", e);
+      alert("Error fetching timetable");
+    }
+  };
+
+  const testCourses = async () => {
+    try {
+      const result: CoursesResponse = await window.timetable.courses();
+      console.log("Courses result:", result);
+      alert(`Courses fetched: ${result.success ? "Success" : "Failed"}`);
+    } catch (e) {
+      console.error("Courses error:", e);
+      alert("Error fetching courses");
+    }
+  };
+
   /* -------------------- States -------------------- */
 
   if (loading) {
@@ -169,10 +198,22 @@ export default function Dashboard() {
     <div className="h-full w-full px-6 lg:px-10 py-6 space-y-12">
       {/* Header */}
       <header className="space-y-1">
-        <h1 className="text-3xl font-bold">Academic Dashboard</h1>
-        {semester && (
-          <p className="text-muted-foreground">Semester: {semester}</p>
-        )}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Academic Dashboard</h1>
+            {semester && (
+              <p className="text-muted-foreground">Semester: {semester}</p>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={testCourses} variant="outline">
+              Test Courses
+            </Button>
+            <Button onClick={testTimetable} variant="outline">
+              Test Timetable
+            </Button>
+          </div>
+        </div>
       </header>
 
       {/* Stats */}

@@ -1,6 +1,12 @@
 import { SystemStats, CGPAData } from "@/types/electron/system.types";
-import { Course } from "@/types/renderer/Course.types";
+import {
+  Course,
+  CoursesResponse,
+  WeeklyScheduleResponse,
+} from "@/types/renderer/Course.types";
 import { Semester } from "@/types/electron/Semster.types";
+import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
+import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
 
 declare global {
   interface Window {
@@ -10,13 +16,15 @@ declare global {
         maximize: () => void;
         close: () => void;
       };
-      timetable: {
-        get: () => Promise<{
-          success: boolean;
-          semesters?: Semester[];
-          error?: string;
-        }>;
-      };
+    };
+    timetable: {
+      get: () => Promise<{
+        success: boolean;
+        semesters?: Semester[];
+        error?: string;
+      }>;
+      courses: () => Promise<CoursesResponse>;
+      currentSemester: () => Promise<WeeklyScheduleResponse>;
     };
     login: {
       authenticate: (body: { username: string; password: string }) => Promise<{
@@ -62,7 +70,7 @@ declare global {
         csrf: string,
       ) => Promise<{
         success: boolean;
-        data?: any;
+        data?: ParsedStudentData;
         html?: string;
         error?: string;
       }>;
@@ -70,7 +78,7 @@ declare global {
     grade: {
       getExamGradeView: () => Promise<{
         success: boolean;
-        data?: any;
+        data?: StudentHistoryData;
         error?: string;
       }>;
     };
@@ -110,16 +118,6 @@ declare global {
         semesters?: Semester[];
         error?: string;
       }>;
-    };
-    update: {
-      onCheckingForUpdate: (callback: () => void) => void;
-      onUpdateAvailable: (callback: () => void) => void;
-      onUpdateNotAvailable: (callback: () => void) => void;
-      onDownloadProgress: (
-        callback: (progress: { percent: number }) => void,
-      ) => void;
-      onUpdateDownloaded: (callback: () => void) => void;
-      onError: (callback: (error: Error) => void) => void;
     };
   }
 }
