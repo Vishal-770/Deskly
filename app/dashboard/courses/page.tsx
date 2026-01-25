@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { BookOpen, Calendar, Clock, Users } from "lucide-react";
 import { CoursesResponse } from "../../../types/renderer/Course.types";
 import { CourseDetails } from "../../../types/electron/Course.types";
+import { Separator } from "../../../components/ui/separator";
 export default function CoursesPage() {
   const [courses, setCourses] = useState<CourseDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +76,9 @@ export default function CoursesPage() {
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                <span>{course.faculty.name}</span>
+                <span>
+                  {course.faculty.name} ({course.faculty.school})
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -87,10 +90,50 @@ export default function CoursesPage() {
               </div>
             </div>
 
+            <Separator className="my-3" />
+
+            <div className="space-y-1 text-xs">
+              <div>
+                <strong>Type:</strong> {course.courseType}
+              </div>
+              <div>
+                <strong>Category:</strong> {course.category}
+              </div>
+              <div>
+                <strong>Registration Type:</strong> {course.registrationOption}
+              </div>
+              <div>
+                <strong>Class ID:</strong> {course.classId}
+              </div>
+              <div>
+                <strong>Class Group:</strong> {course.classGroup}
+              </div>
+            </div>
+
+            <Separator className="my-3" />
+
             <div className="mt-4 pt-4 border-t border-border">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Credits</span>
-                <span className="font-semibold">{course.credits.total}</span>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-muted-foreground">Lecture:</span>{" "}
+                  {course.credits.lecture}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Tutorial:</span>{" "}
+                  {course.credits.tutorial}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Practical:</span>{" "}
+                  {course.credits.practical}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Project:</span>{" "}
+                  {course.credits.project}
+                </div>
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">Total Credits:</span>{" "}
+                  <span className="font-semibold">{course.credits.total}</span>
+                </div>
               </div>
             </div>
           </div>
