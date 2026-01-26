@@ -2,7 +2,24 @@
 
 import Loader from "@/components/Loader";
 import { useEffect, useState } from "react";
+import { AttendanceRecord as DetailRecord } from "@/types/renderer/AttendanceDetail.types";
 
+/* -------------------- Global Types -------------------- */
+
+declare global {
+  interface Window {
+    attendanceDetail?: {
+      get: (
+        classId: string,
+        slotName: string,
+      ) => Promise<{
+        success: boolean;
+        data?: import("@/types/renderer/AttendanceDetail.types").AttendanceRecord[];
+        error?: string;
+      }>;
+    };
+  }
+}
 
 /* -------------------- Types -------------------- */
 
@@ -23,70 +40,40 @@ interface AttendanceRecord {
   status: string;
 }
 
-/* -------------------- Mock Data -------------------- */
+/* -------------------- Utility Functions -------------------- */
 
-const mockAttendanceData: AttendanceRecord[] = [
-  {
-    classId: "1",
-    courseCode: "CS301",
-    courseTitle: "Data Structures & Algorithms",
-    courseType: "Theory",
-    slot: "A1",
-    faculty: { name: "Dr. Smith" },
-    attendedClasses: 28,
-    totalClasses: 30,
-    attendancePercentage: 93,
-    status: "Regular",
-  },
-  {
-    classId: "2",
-    courseCode: "CS302",
-    courseTitle: "Database Management Systems",
-    courseType: "Theory + Lab",
-    slot: "B1",
-    faculty: { name: "Prof. Johnson" },
-    attendedClasses: 25,
-    totalClasses: 28,
-    attendancePercentage: 89,
-    status: "Regular",
-  },
-  {
-    classId: "3",
-    courseCode: "CS303",
-    courseTitle: "Operating Systems",
-    courseType: "Theory",
-    slot: "C1",
-    faculty: { name: "Dr. Williams" },
-    attendedClasses: 18,
-    totalClasses: 26,
-    attendancePercentage: 69,
-    status: "Shortage",
-  },
-  {
-    classId: "4",
-    courseCode: "CS304",
-    courseTitle: "Computer Networks",
-    courseType: "Theory + Lab",
-    slot: "D1",
-    faculty: { name: "Prof. Brown" },
-    attendedClasses: 22,
-    totalClasses: 24,
-    attendancePercentage: 92,
-    status: "Regular",
-  },
-  {
-    classId: "5",
-    courseCode: "MA201",
-    courseTitle: "Probability & Statistics",
-    courseType: "Theory",
-    slot: "E1",
-    faculty: { name: "Dr. Davis" },
-    attendedClasses: 20,
-    totalClasses: 22,
-    attendancePercentage: 91,
-    status: "Regular",
-  },
-];
+function calculateHoursFromTimeRange(timeRange: string): number {
+  // Parse time range like "TUE,08:00-09:40" or "14:55-15:45"
+  const timePart = timeRange.includes(",")
+    ? timeRange.split(",")[1]
+    : timeRange;
+  const match = timePart.match(/(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})/);
+  if (!match) return 0;
+
+  const [, startHour, startMin, endHour, endMin] = match.map(Number);
+
+  const startTime = startHour * 60 + startMin;
+  const endTime = endHour * 60 + endMin;
+
+  const durationMinutes = endTime - startTime;
+  return durationMinutes / 60; // Convert to hours
+}
+
+function calculateTotalODHours(details: DetailRecord[]): number {
+  return details
+    .filter(
+      (detail) =>
+        detail.status === "Present" ||
+        detail.status === "On Duty" ||
+        detail.status === "Absent",
+    )
+    .reduce(
+      (total, detail) => total + calculateHoursFromTimeRange(detail.dayAndTime),
+      0,
+    );
+}
+
+/* -------------------- Mock Data -------------------- */
 
 /* -------------------- Components -------------------- */
 
@@ -173,7 +160,17 @@ function calculateAttendanceNeeded(
   }
 }
 
-function AttendanceRow({ record }: { record: AttendanceRecord }) {
+function AttendanceRow({
+  record,
+  onToggleExpanded,
+  details,
+  isExpanded,
+}: {
+  record: AttendanceRecord;
+  onToggleExpanded: (classId: string) => void;
+  details: DetailRecord[] | null;
+  isExpanded: boolean;
+}) {
   const attendanceStatus = calculateAttendanceNeeded(
     record.attendedClasses,
     record.totalClasses,
@@ -252,6 +249,27 @@ function AttendanceRow({ record }: { record: AttendanceRecord }) {
                 : `-${attendanceStatus.needToAttend} need`}
             </span>
           </div>
+          <div className="w-20 text-right">
+            <button
+              onClick={() => onToggleExpanded(record.classId)}
+              className="text-xs px-2 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90 flex items-center gap-1"
+            >
+              <svg
+                className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+              {isExpanded ? "Hide" : "Details"}
+            </button>
+          </div>
         </div>
 
         {/* Mobile view details */}
@@ -271,15 +289,87 @@ function AttendanceRow({ record }: { record: AttendanceRecord }) {
 
       {/* Subtle divider */}
       <div className="absolute bottom-0 left-6 right-6 h-px bg-border/50" />
+
+      {/* Collapsible Details Section */}
+      {isExpanded && details && (
+        <div className="bg-secondary/20 border-t border-border/50 overflow-hidden">
+          <div className="px-6 py-4 animate-in slide-in-from-top-2 duration-300">
+            <div className="mb-3">
+              <h4 className="text-sm font-medium text-foreground">
+                Attendance History
+              </h4>
+            </div>
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {details.map((detail, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between py-2 px-3 bg-background/50 rounded-md text-xs animate-in fade-in duration-300"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-muted-foreground w-8">
+                      {detail.serialNo}
+                    </span>
+                    <span className="text-foreground">{detail.date}</span>
+                    <span className="text-muted-foreground">{detail.slot}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground">
+                      {detail.dayAndTime}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      (
+                      {detail.status === "Present" ||
+                      detail.status === "On Duty"
+                        ? `${calculateHoursFromTimeRange(detail.dayAndTime).toFixed(1)}h`
+                        : "-"}
+                      )
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        detail.status === "Present"
+                          ? "bg-green-500/15 text-green-500"
+                          : detail.status === "Absent"
+                            ? "bg-destructive/15 text-destructive"
+                            : "bg-yellow-500/15 text-yellow-500"
+                      }`}
+                    >
+                      {detail.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function StatsOverview({ data }: { data: AttendanceRecord[] }) {
+function StatsOverview({
+  data,
+  expandedDetails,
+}: {
+  data: AttendanceRecord[];
+  expandedDetails: { [key: string]: DetailRecord[] | null };
+}) {
   const totalClasses = data.reduce((sum, r) => sum + r.totalClasses, 0);
   const attendedClasses = data.reduce((sum, r) => sum + r.attendedClasses, 0);
   const overallPercentage = Math.round((attendedClasses / totalClasses) * 100);
   const lowAttendance = data.filter((r) => r.attendancePercentage < 60).length;
+
+  // Calculate total On Duty hours across all subjects (50 min per OD)
+  const totalODHours = Object.values(expandedDetails).reduce(
+    (total, details) => {
+      if (!details) return total;
+      const odCount = details.filter(
+        (detail) => detail.status === "On Duty",
+      ).length;
+      return total + (odCount * 50) / 60;
+    },
+    0,
+  );
 
   return (
     <div className="flex items-center gap-12 py-8 px-6">
@@ -313,6 +403,15 @@ function StatsOverview({ data }: { data: AttendanceRecord[] }) {
           <p className="text-sm text-muted-foreground">Classes Attended</p>
         </div>
 
+        {totalODHours > 0 && (
+          <div>
+            <p className="text-2xl font-semibold text-foreground font-mono">
+              {totalODHours.toFixed(1)}h
+            </p>
+            <p className="text-sm text-muted-foreground">On Duty Hours</p>
+          </div>
+        )}
+
         {lowAttendance > 0 && (
           <div>
             <p className="text-2xl font-semibold text-destructive font-mono">
@@ -334,6 +433,22 @@ export default function AttendancePage() {
   >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedDetails, setExpandedDetails] = useState<{
+    [key: string]: DetailRecord[] | null;
+  }>({});
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (classId: string) => {
+    setExpandedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(classId)) {
+        newSet.delete(classId);
+      } else {
+        newSet.add(classId);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -357,13 +472,40 @@ export default function AttendancePage() {
           ).attendance.get();
           if (result.success) {
             setAttendanceData(result.data ?? null);
+            // Fetch all details
+            if (result.data && result.data.length > 0) {
+              const fetchAllDetails = async () => {
+                const allDetails: { [key: string]: DetailRecord[] } = {};
+                const attendanceDetail = window.attendanceDetail;
+                if (attendanceDetail) {
+                  for (const record of result.data!) {
+                    try {
+                      const detailResult = await attendanceDetail.get(
+                        record.classId,
+                        record.slot,
+                      );
+                      if (detailResult.success && detailResult.data) {
+                        allDetails[record.classId] = detailResult.data;
+                      }
+                    } catch (err) {
+                      console.error(
+                        "Error fetching details for",
+                        record.classId,
+                        err,
+                      );
+                    }
+                  }
+                }
+                setExpandedDetails(allDetails);
+              };
+              fetchAllDetails();
+            }
           } else {
             setError(result.error || "Failed to fetch attendance");
           }
         } else {
-          // Use mock data for preview
-          await new Promise((resolve) => setTimeout(resolve, 800));
-          setAttendanceData(mockAttendanceData);
+          // No data available
+          setAttendanceData([]);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
@@ -447,7 +589,10 @@ export default function AttendancePage() {
         </div>
 
         {/* Stats Overview */}
-        <StatsOverview data={attendanceData} />
+        <StatsOverview
+          data={attendanceData}
+          expandedDetails={expandedDetails}
+        />
 
         {/* Divider */}
         <div className="h-px bg-border my-6" />
@@ -460,13 +605,20 @@ export default function AttendancePage() {
             <span className="w-32 text-right">Faculty</span>
             <span className="w-20 text-right">Classes</span>
             <span className="w-28 text-right">Margin</span>
+            <span className="w-20 text-right">Actions</span>
           </div>
         </div>
 
         {/* Course List */}
         <div className="rounded-lg overflow-hidden">
           {attendanceData.map((record) => (
-            <AttendanceRow key={record.classId} record={record} />
+            <AttendanceRow
+              key={record.classId}
+              record={record}
+              onToggleExpanded={toggleExpanded}
+              details={expandedDetails[record.classId] || null}
+              isExpanded={expandedRows.has(record.classId)}
+            />
           ))}
         </div>
       </div>

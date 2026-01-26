@@ -19,6 +19,7 @@ import "./ipc/timetable.ipc";
 import "./ipc/marks.ipc";
 import "./ipc/curriculum.ipc";
 import "./ipc/contactInfo.ipc";
+import "./ipc/attendanceDetail.ipc";
 
 /*******
  * END IPC IMPORTS

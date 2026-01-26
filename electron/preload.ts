@@ -8,6 +8,7 @@ import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
 import { Category } from "@/types/electron/curriculum.types";
 import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
+import { AttendanceRecord as DetailRecord } from "@/lib/electron/parsers/ParseAttendacneDetails";
 import { contextBridge, ipcRenderer } from "electron";
 
 console.log("Preload script loaded");
@@ -47,6 +48,17 @@ contextBridge.exposeInMainWorld("attendance", {
     data?: AttendanceRecord[];
     error?: string;
   }> => ipcRenderer.invoke("timetable:attendance"),
+});
+
+contextBridge.exposeInMainWorld("attendanceDetail", {
+  get: (
+    classId: string,
+    slotName: string,
+  ): Promise<{
+    success: boolean;
+    data?: DetailRecord[];
+    error?: string;
+  }> => ipcRenderer.invoke("get-attendance-detail", classId, slotName),
 });
 
 contextBridge.exposeInMainWorld("login", {
