@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Loader from "@/components/Loader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar } from "lucide-react";
 
 /* -------------------- Types -------------------- */
 
@@ -60,6 +62,21 @@ function createCalendarGrid(
     }
   });
 
+  // Find the last non-null cell
+  let lastNonNullIndex = -1;
+  for (let i = grid.length - 1; i >= 0; i--) {
+    if (grid[i] !== null) {
+      lastNonNullIndex = i;
+      break;
+    }
+  }
+
+  // Trim empty rows at the end (7 cells per row)
+  if (lastNonNullIndex >= 0) {
+    const lastRowStart = Math.floor(lastNonNullIndex / 7) * 7;
+    return grid.slice(0, lastRowStart + 7);
+  }
+
   return grid;
 }
 
@@ -69,10 +86,10 @@ export default function AcademicCalendarPage() {
   const [data, setData] = useState<AcademicCalendarItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [calendarView, setCalendarView] = useState<MonthlySchedule | null>(
-    null,
-  );
-  const [calendarLoading, setCalendarLoading] = useState(false);
+  const [calendarData, setCalendarData] = useState<
+    Record<string, MonthlySchedule>
+  >({});
+  const [activeTab, setActiveTab] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,6 +103,10 @@ export default function AcademicCalendarPage() {
           );
           if (result.success) {
             setData(result.data || []);
+            // Set first month as active tab if available
+            if (result.data && result.data.length > 0) {
+              setActiveTab(result.data[0].dateValue);
+            }
           } else {
             setError(result.error || "Failed to fetch academic calendar");
           }
@@ -102,108 +123,185 @@ export default function AcademicCalendarPage() {
     fetchData();
   }, []);
 
-  const handleMonthClick = async (dateValue: string) => {
-    console.log("Fetching calendar view for:", dateValue);
-    setCalendarLoading(true);
-    if (window.academicCalendar?.getView) {
-      try {
-        const result = await window.academicCalendar.getView(dateValue);
-        console.log("Calendar view result success:", result.success);
-        if (result.success && result.data) {
-          setCalendarView(result.data);
-        } else {
-          console.error(
-            "Failed to fetch calendar view:",
-            result.error || "Unknown error",
-          );
+  const handleTabChange = async (dateValue: string) => {
+    setActiveTab(dateValue);
+
+    // Fetch calendar data if not already loaded
+    if (!calendarData[dateValue]) {
+      console.log("Fetching calendar view for:", dateValue);
+      if (window.academicCalendar?.getView) {
+        try {
+          const result = await window.academicCalendar.getView(dateValue);
+          console.log("Calendar view result success:", result.success);
+          if (result.success && result.data) {
+            setCalendarData((prev) => ({
+              ...prev,
+              [dateValue]: result.data as MonthlySchedule,
+            }));
+          } else {
+            console.error(
+              "Failed to fetch calendar view:",
+              result.error || "Unknown error",
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching calendar view:", error);
         }
-      } catch (error) {
-        console.error("Error fetching calendar view:", error);
+      } else {
+        console.error("getView method not available");
       }
-    } else {
-      console.error("getView method not available");
     }
-    setCalendarLoading(false);
   };
 
   if (loading) {
-    return <Loader />;
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-background">
+        <Loader />
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Academic Calendar</h1>
-        <p className="text-destructive">Error: {error}</p>
+      <div className="h-full w-full flex flex-col items-center justify-center bg-background p-6">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto">
+            <Calendar className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground">Calendar Error</h2>
+          <p className="text-muted-foreground">{error}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Academic Calendar</h1>
-      {calendarView ? (
-        <div className="mb-6">
-          <button
-            onClick={() => setCalendarView(null)}
-            className="mb-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
-          >
-            Back to Months
-          </button>
-          <h2 className="text-xl font-semibold mb-4">{calendarView.month}</h2>
-          {calendarLoading ? (
-            <Loader />
-          ) : (
-            <div className="grid grid-cols-7 gap-2">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div
-                  key={day}
-                  className="p-2 font-semibold text-center border-b"
+    <div className="h-full w-full bg-background flex flex-col">
+      {/* Header */}
+      <header className="border-b border-border px-6 py-6 bg-background">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
+            <Calendar className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              Academic Calendar
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              View important academic dates and schedules
+            </p>
+          </div>
+        </div>
+      </header>
+
+      {/* Tabs */}
+      <main className="flex-1 overflow-hidden">
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="h-full flex flex-col"
+        >
+          <div className="border-b border-border bg-background px-6 py-4">
+            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 gap-1 bg-background">
+              {data.map((item) => (
+                <TabsTrigger
+                  key={item.dateValue}
+                  value={item.dateValue}
+                  className="text-xs px-2 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-background hover:bg-muted/50"
                 >
-                  {day}
-                </div>
+                  {item.label.split(" ")[0]}
+                </TabsTrigger>
               ))}
-              {createCalendarGrid(calendarView.month, calendarView.days).map(
-                (day, index) => (
-                  <div
-                    key={index}
-                    className="min-h-[100px] p-2 border rounded-lg bg-card"
-                  >
-                    {day && (
-                      <>
-                        <div className="font-semibold mb-1">{day.date}</div>
-                        <div className="space-y-1">
-                          {day.content.map((line, lineIndex) => (
+            </TabsList>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            {data.map((item) => (
+              <TabsContent
+                key={item.dateValue}
+                value={item.dateValue}
+                className="h-full mt-0"
+              >
+                {calendarData[item.dateValue] ? (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-semibold text-foreground">
+                        {calendarData[item.dateValue].month}
+                      </h2>
+                      <div className="text-sm text-muted-foreground">
+                        {item.dateValue}
+                      </div>
+                    </div>
+
+                    <div className="bg-background rounded-lg border border-border p-6">
+                      <div className="grid grid-cols-7 gap-1 mb-4">
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                          (day) => (
                             <div
-                              key={lineIndex}
-                              className="text-xs text-muted-foreground"
+                              key={day}
+                              className="p-3 font-semibold text-center text-muted-foreground text-sm"
                             >
-                              {line}
+                              {day}
                             </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
+                          ),
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-7 gap-1">
+                        {createCalendarGrid(
+                          calendarData[item.dateValue].month,
+                          calendarData[item.dateValue].days,
+                        ).map((day, index) => (
+                          <div
+                            key={index}
+                            className={`min-h-[100px] p-3 border border-border/50 rounded-md bg-background hover:bg-muted/30 transition-colors ${
+                              day ? "cursor-pointer" : ""
+                            }`}
+                          >
+                            {day && (
+                              <>
+                                <div className="font-semibold text-sm mb-3 text-foreground">
+                                  {day.date}
+                                </div>
+                                {day.content.length > 0 && (
+                                  <ul className="space-y-1">
+                                    {day.content.map((line, lineIndex) => (
+                                      <li
+                                        key={lineIndex}
+                                        className="text-xs text-muted-foreground leading-tight flex items-start gap-1"
+                                      >
+                                        <span className="text-primary mt-[-1px]">
+                                          •
+                                        </span>
+                                        <span className="flex-1">{line}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                ),
-              )}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {data.map((item, index) => (
-            <div
-              key={index}
-              className="p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors"
-              onClick={() => handleMonthClick(item.dateValue)}
-            >
-              <p className="font-medium">{item.label}</p>
-              <p className="text-sm text-muted-foreground">{item.dateValue}</p>
-            </div>
-          ))}
-        </div>
-      )}
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center space-y-3">
+                      <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto">
+                        <Calendar className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                      <p className="text-muted-foreground">
+                        Loading calendar...
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+            ))}
+          </div>
+        </Tabs>
+      </main>
     </div>
   );
 }

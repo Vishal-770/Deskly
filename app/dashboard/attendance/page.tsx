@@ -3,6 +3,12 @@
 import Loader from "@/components/Loader";
 import { useEffect, useState } from "react";
 import { AttendanceRecord as DetailRecord } from "@/types/renderer/AttendanceDetail.types";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 /* -------------------- Global Types -------------------- */
 
@@ -59,18 +65,23 @@ function calculateHoursFromTimeRange(timeRange: string): number {
   return durationMinutes / 60; // Convert to hours
 }
 
-function calculateTotalODHours(details: DetailRecord[]): number {
-  return details
-    .filter(
-      (detail) =>
-        detail.status === "Present" ||
-        detail.status === "On Duty" ||
-        detail.status === "Absent",
-    )
-    .reduce(
-      (total, detail) => total + calculateHoursFromTimeRange(detail.dayAndTime),
-      0,
-    );
+function formatDayAndTime(dayAndTime: string): string {
+  const dayMap: { [key: string]: string } = {
+    MON: "Monday",
+    TUE: "Tuesday",
+    WED: "Wednesday",
+    THU: "Thursday",
+    FRI: "Friday",
+    SAT: "Saturday",
+    SUN: "Sunday",
+  };
+
+  if (dayAndTime.includes(",")) {
+    const [day, time] = dayAndTime.split(",");
+    const fullDay = dayMap[day] || day;
+    return `${fullDay} ${time.replace("-", " - ")}`;
+  }
+  return dayAndTime.replace("-", " - ");
 }
 
 /* -------------------- Mock Data -------------------- */
@@ -162,14 +173,10 @@ function calculateAttendanceNeeded(
 
 function AttendanceRow({
   record,
-  onToggleExpanded,
   details,
-  isExpanded,
 }: {
   record: AttendanceRecord;
-  onToggleExpanded: (classId: string) => void;
   details: DetailRecord[] | null;
-  isExpanded: boolean;
 }) {
   const attendanceStatus = calculateAttendanceNeeded(
     record.attendedClasses,
@@ -189,8 +196,8 @@ function AttendanceRow({
   }
 
   return (
-    <div className="group relative">
-      <div className="flex items-center justify-between py-5 px-6 hover:bg-secondary/30 transition-colors duration-200 cursor-default">
+    <AccordionItem value={record.classId}>
+      <AccordionTrigger className="group relative flex items-center justify-between py-5 px-6 hover:bg-secondary/30 transition-colors duration-200 cursor-default hover:no-underline">
         <div className="flex items-center gap-6 flex-1 min-w-0">
           <CircularProgress percentage={record.attendancePercentage} />
 
@@ -203,17 +210,19 @@ function AttendanceRow({
                 {record.courseType}
               </span>
             </div>
-            <h3 className="text-foreground font-medium truncate pr-4">
-              {record.courseTitle}
-            </h3>
-            {/* Attendance hint */}
-            <p className={`text-xs mt-1 ${hintColor}`}>
-              {attendanceStatus.isSafe
-                ? attendanceStatus.canSkip > 0
-                  ? `Can skip ${attendanceStatus.canSkip} class${attendanceStatus.canSkip > 1 ? "es" : ""}`
-                  : "On track - attend next class"
-                : `Need ${attendanceStatus.needToAttend} more class${attendanceStatus.needToAttend > 1 ? "es" : ""} to reach 75%`}
-            </p>
+            <div className="min-w-0">
+              <h3 className="text-foreground font-medium truncate pr-4">
+                {record.courseTitle}
+              </h3>
+              {/* Attendance hint */}
+              <p className={`text-xs mt-1 ${hintColor}`}>
+                {attendanceStatus.isSafe
+                  ? attendanceStatus.canSkip > 0
+                    ? `Can skip ${attendanceStatus.canSkip} class${attendanceStatus.canSkip > 1 ? "es" : ""}`
+                    : "On track - attend next class"
+                  : `Need ${attendanceStatus.needToAttend} more class${attendanceStatus.needToAttend > 1 ? "es" : ""} to reach 75%`}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -249,27 +258,6 @@ function AttendanceRow({
                 : `-${attendanceStatus.needToAttend} need`}
             </span>
           </div>
-          <div className="w-20 text-right">
-            <button
-              onClick={() => onToggleExpanded(record.classId)}
-              className="text-xs px-2 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90 flex items-center gap-1"
-            >
-              <svg
-                className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-              {isExpanded ? "Hide" : "Details"}
-            </button>
-          </div>
         </div>
 
         {/* Mobile view details */}
@@ -285,65 +273,76 @@ function AttendanceRow({
             </span>
           </div>
         </div>
-      </div>
-
-      {/* Subtle divider */}
-      <div className="absolute bottom-0 left-6 right-6 h-px bg-border/50" />
-
-      {/* Collapsible Details Section */}
-      {isExpanded && details && (
-        <div className="bg-secondary/20 border-t border-border/50 overflow-hidden">
+      </AccordionTrigger>
+      {details && (
+        <AccordionContent className="bg-secondary/20 border-t border-border/50 overflow-hidden">
           <div className="px-6 py-4 animate-in slide-in-from-top-2 duration-300">
             <div className="mb-3">
               <h4 className="text-sm font-medium text-foreground">
                 Attendance History
               </h4>
             </div>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+            {/* Headers */}
+            <div className="grid grid-cols-4 md:grid-cols-6 gap-3 mb-2 text-xs font-medium text-muted-foreground px-3">
+              <span>S.No</span>
+              <span>Date</span>
+              <span className="hidden md:block">Slot</span>
+              <span>Time</span>
+              <span className="hidden md:block">Hours</span>
+              <span className="text-right">Status</span>
+            </div>
+            <div
+              className="space-y-2 max-h-60 overflow-y-auto"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
               {details.map((detail, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between py-2 px-3 bg-background/50 rounded-md text-xs animate-in fade-in duration-300"
+                  className="grid grid-cols-4 md:grid-cols-6 gap-3 items-center py-2 px-3 bg-background/50 rounded-md text-xs animate-in fade-in duration-300"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-muted-foreground w-8">
-                      {detail.serialNo}
-                    </span>
-                    <span className="text-foreground">{detail.date}</span>
-                    <span className="text-muted-foreground">{detail.slot}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground">
-                      {detail.dayAndTime}
-                    </span>
-                    <span className="text-muted-foreground text-xs">
-                      (
-                      {detail.status === "Present" ||
-                      detail.status === "On Duty"
-                        ? `${calculateHoursFromTimeRange(detail.dayAndTime).toFixed(1)}h`
-                        : "-"}
-                      )
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        detail.status === "Present"
-                          ? "bg-green-500/15 text-green-500"
-                          : detail.status === "Absent"
-                            ? "bg-destructive/15 text-destructive"
-                            : "bg-yellow-500/15 text-yellow-500"
-                      }`}
-                    >
-                      {detail.status}
-                    </span>
-                  </div>
+                  <span className="font-mono text-muted-foreground">
+                    {detail.serialNo}
+                  </span>
+                  <span className="text-foreground">{detail.date}</span>
+                  <span className="hidden md:block text-muted-foreground">
+                    {detail.slot}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {formatDayAndTime(detail.dayAndTime)}
+                  </span>
+                  <span className="hidden md:block text-muted-foreground">
+                    {detail.status === "Present" || detail.status === "On Duty"
+                      ? (() => {
+                          const decimalHours = calculateHoursFromTimeRange(
+                            detail.dayAndTime,
+                          );
+                          const hours = Math.floor(decimalHours);
+                          const minutes = Math.round(
+                            (decimalHours - hours) * 60,
+                          );
+                          return `${hours}h ${minutes}m`;
+                        })()
+                      : "-"}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium justify-self-end ${
+                      detail.status === "Present"
+                        ? "bg-green-500/15 text-green-500"
+                        : detail.status === "Absent"
+                          ? "bg-destructive/15 text-destructive"
+                          : "bg-yellow-500/15 text-yellow-500"
+                    }`}
+                  >
+                    {detail.status}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </AccordionContent>
       )}
-    </div>
+    </AccordionItem>
   );
 }
 
@@ -359,20 +358,26 @@ function StatsOverview({
   const overallPercentage = Math.round((attendedClasses / totalClasses) * 100);
   const lowAttendance = data.filter((r) => r.attendancePercentage < 60).length;
 
-  // Calculate total On Duty hours across all subjects (50 min per OD)
+  // Calculate total On Duty hours across all subjects based on actual time
   const totalODHours = Object.values(expandedDetails).reduce(
     (total, details) => {
       if (!details) return total;
-      const odCount = details.filter(
-        (detail) => detail.status === "On Duty",
-      ).length;
-      return total + (odCount * 50) / 60;
+      return (
+        total +
+        details
+          .filter((detail) => detail.status === "On Duty")
+          .reduce(
+            (sum, detail) =>
+              sum + calculateHoursFromTimeRange(detail.dayAndTime),
+            0,
+          )
+      );
     },
     0,
   );
 
   return (
-    <div className="flex items-center gap-12 py-8 px-6">
+    <div className="flex flex-col md:flex-row items-center gap-6 md:gap-12 py-8 px-6">
       <div className="flex items-center gap-4">
         <CircularProgress percentage={overallPercentage} size={72} />
         <div>
@@ -383,9 +388,9 @@ function StatsOverview({
         </div>
       </div>
 
-      <div className="h-12 w-px bg-border" />
+      <div className="hidden md:block h-12 w-px bg-border" />
 
-      <div className="flex gap-10">
+      <div className="grid grid-cols-2 md:flex gap-4 md:gap-10 md:justify-start">
         <div>
           <p className="text-2xl font-semibold text-foreground font-mono">
             {data.length}
@@ -406,7 +411,13 @@ function StatsOverview({
         {totalODHours > 0 && (
           <div>
             <p className="text-2xl font-semibold text-foreground font-mono">
-              {totalODHours.toFixed(1)}h
+              {(() => {
+                const totalHours = Math.floor(totalODHours);
+                const totalMinutes = Math.round(
+                  (totalODHours - totalHours) * 60,
+                );
+                return `${totalHours}h ${totalMinutes}m`;
+              })()}
             </p>
             <p className="text-sm text-muted-foreground">On Duty Hours</p>
           </div>
@@ -436,19 +447,6 @@ export default function AttendancePage() {
   const [expandedDetails, setExpandedDetails] = useState<{
     [key: string]: DetailRecord[] | null;
   }>({});
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-
-  const toggleExpanded = (classId: string) => {
-    setExpandedRows((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(classId)) {
-        newSet.delete(classId);
-      } else {
-        newSet.add(classId);
-      }
-      return newSet;
-    });
-  };
 
   useEffect(() => {
     const fetchAttendance = async () => {
@@ -597,30 +595,16 @@ export default function AttendancePage() {
         {/* Divider */}
         <div className="h-px bg-border my-6" />
 
-        {/* Course List Header */}
-        <div className="flex items-center justify-between px-6 py-3 text-xs text-muted-foreground uppercase tracking-wider">
-          <span>Course</span>
-          <div className="hidden md:flex items-center gap-8">
-            <span className="w-24 text-right">Slot</span>
-            <span className="w-32 text-right">Faculty</span>
-            <span className="w-20 text-right">Classes</span>
-            <span className="w-28 text-right">Margin</span>
-            <span className="w-20 text-right">Actions</span>
-          </div>
-        </div>
-
         {/* Course List */}
-        <div className="rounded-lg overflow-hidden">
+        <Accordion type="multiple" className="rounded-lg overflow-hidden">
           {attendanceData.map((record) => (
             <AttendanceRow
               key={record.classId}
               record={record}
-              onToggleExpanded={toggleExpanded}
               details={expandedDetails[record.classId] || null}
-              isExpanded={expandedRows.has(record.classId)}
             />
           ))}
-        </div>
+        </Accordion>
       </div>
     </div>
   );

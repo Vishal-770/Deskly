@@ -19,7 +19,6 @@ import { CoursesResponse } from "../../../types/renderer/Course.types";
 import { CourseDetails } from "../../../types/electron/Course.types";
 import Loader from "@/components/Loader";
 
-
 function StatCard({
   label,
   value,
@@ -98,7 +97,12 @@ function CourseCard({
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Category:</span>
-                <span className="text-foreground">{course.category}</span>
+                <span
+                  className="text-foreground truncate"
+                  title={course.category}
+                >
+                  {course.category}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Layers className="h-4 w-4 text-muted-foreground" />
