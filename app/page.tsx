@@ -18,7 +18,11 @@ export default function LoginPage() {
   }, [authState, router]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex flex-col min-h-screen h-full w-full bg-background text-foreground transition-colors duration-300">
+        <Loader />
+      </div>
+    );
   }
   return (
     <div className="flex flex-col min-h-screen h-full w-full bg-background text-foreground transition-colors duration-300 ">
