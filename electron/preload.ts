@@ -153,6 +153,21 @@ contextBridge.exposeInMainWorld("contactInfo", {
     ipcRenderer.invoke("contactInfo:get"),
 });
 
+contextBridge.exposeInMainWorld("academicCalendar", {
+  get: (): Promise<{
+    success: boolean;
+    data?: { label: string; dateValue: string }[];
+    error?: string;
+  }> => ipcRenderer.invoke("academicCalendar:get"),
+  getView: (
+    calDate: string,
+  ): Promise<{
+    success: boolean;
+    data?: import("@/lib/electron/parsers/academicCalender.parser").MonthlySchedule;
+    error?: string;
+  }> => ipcRenderer.invoke("academicCalendar:getView", calDate),
+});
+
 contextBridge.exposeInMainWorld("grade", {
   getExamGradeView: (): Promise<{
     success: boolean;

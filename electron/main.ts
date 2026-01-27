@@ -20,6 +20,7 @@ import "./ipc/marks.ipc";
 import "./ipc/curriculum.ipc";
 import "./ipc/contactInfo.ipc";
 import "./ipc/attendanceDetail.ipc";
+import "./ipc/academicCalendar.ipc";
 
 /*******
  * END IPC IMPORTS

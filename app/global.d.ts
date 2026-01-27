@@ -13,6 +13,7 @@ import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { Category } from "@/types/electron/curriculum.types";
 import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
+import { MonthlySchedule } from "@/lib/electron/parsers/academicCalender.parser";
 
 declare global {
   interface Window {
@@ -103,6 +104,18 @@ declare global {
     };
     contactInfo: {
       get: () => Promise<ContactInfoResponse>;
+    };
+    academicCalendar: {
+      get: () => Promise<{
+        success: boolean;
+        data?: { label: string; dateValue: string }[];
+        error?: string;
+      }>;
+      getView: (calDate: string) => Promise<{
+        success: boolean;
+        data?: MonthlySchedule;
+        error?: string;
+      }>;
     };
     grade: {
       getExamGradeView: () => Promise<{
