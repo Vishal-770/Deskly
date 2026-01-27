@@ -62,14 +62,25 @@ function registerRendererProtocol() {
 
       let finalPath = path.join(outDir, stripped);
 
+      const hasExtension = path.extname(finalPath);
+
       // If the path has no extension, assume a directory and append index.html
-      if (!path.extname(finalPath)) {
+      if (!hasExtension) {
         finalPath = path.join(finalPath, "index.html");
       }
 
-      // Fallback to root index if the requested file does not exist
+      // Check if file exists
       if (!fs.existsSync(finalPath)) {
-        finalPath = path.join(outDir, "index.html");
+        if (hasExtension) {
+          // For assets (JS, CSS, etc.), return 404 if not found
+          return new Response("Asset not found", {
+            status: 404,
+            headers: { "content-type": "text/plain" },
+          });
+        } else {
+          // For routes, fallback to root index.html
+          finalPath = path.join(outDir, "index.html");
+        }
       }
 
       // Return file using net.fetch with file:// URL

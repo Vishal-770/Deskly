@@ -66,6 +66,7 @@
   "build": {
     "appId": "com.deskly.app",
     "productName": "Deskly",
+    "compression": "maximum",
     "files": [
       "dist-electron/**/*",
       "out/**/*",

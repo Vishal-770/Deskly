@@ -102,13 +102,21 @@ const DashboardSidebar = () => {
         href: "/dashboard/settings",
         icon: <Settings className="w-5 h-5" />,
       },
+    ],
+    [],
+  );
+
+  // Include Profile in search items
+  const searchItems = useMemo<NavItem[]>(
+    () => [
+      ...navItems,
       {
         label: "Profile",
         href: "/dashboard/profile",
         icon: <User className="w-5 h-5" />,
       },
     ],
-    [],
+    [navItems],
   );
 
   // derive results from `query` (useMemo avoids setState in effects)
@@ -122,10 +130,10 @@ const DashboardSidebar = () => {
     };
 
     try {
-      const fuse = new Fuse<NavItem>(navItems, options);
+      const fuse = new Fuse<NavItem>(searchItems, options);
       const fuseResults = fuse.search(query);
       const mapped = fuseResults.map((r) => r.item);
-      const substrMatches = navItems.filter((i) =>
+      const substrMatches = searchItems.filter((i) =>
         i.label.toLowerCase().includes(query.toLowerCase()),
       );
       const combined = [
@@ -135,10 +143,12 @@ const DashboardSidebar = () => {
       return combined.length ? combined : [];
     } catch {
       const q = query.toLowerCase();
-      const matches = navItems.filter((i) => i.label.toLowerCase().includes(q));
+      const matches = searchItems.filter((i) =>
+        i.label.toLowerCase().includes(q),
+      );
       return matches.length ? matches : [];
     }
-  }, [query, navItems]);
+  }, [query, searchItems]);
 
   useEffect(() => {
     if (searchOpen) {
@@ -161,23 +171,6 @@ const DashboardSidebar = () => {
       <div
         className={`fixed left-0 top-8 w-16 h-full bg-card/98 backdrop-blur-sm text-card-foreground py-4 border-r border-border/50 overflow-y-auto hide-scrollbar shadow-lg flex flex-col items-center transition-all duration-300`}
       >
-        {/* Logo */}
-        <Link
-          href="/dashboard"
-          className={`mb-6 p-2 rounded-lg hover:bg-muted transition-all duration-200 cursor-pointer group relative ${pathname === "/dashboard" ? "bg-primary/10 text-primary border-l-4 border-primary" : ""}`}
-        >
-          <Image
-            src="/app-logo.png"
-            alt="Logo"
-            width={24}
-            height={24}
-            className="w-6 h-6"
-          />
-          <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-            <span className="text-sm font-medium">Deskly</span>
-          </div>
-        </Link>
-
         {/* Navigation / Search */}
         <nav className="space-y-2 flex-1 w-full flex flex-col items-center">
           {/* Search button (top) */}
