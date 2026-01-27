@@ -1,9 +1,23 @@
 import VTOPClient from "../../lib/electron/axios.client";
 import { getAuthTokens, getSemesterInfo } from "./storeAuth.service";
-import { parseSemesterMonths } from "../../lib/electron/parsers//timeTableMonth.parser";
-import { parseSimpleAttendance } from "../../lib/electron/parsers/academicCalender.parser";
+import { handleAuthErrorAndRetry } from "./errorHandler";
+import {
+  parseSemesterMonths,
+  SemesterMonth,
+} from "../../lib/electron/parsers//timeTableMonth.parser";
+import {
+  parseSimpleAttendance,
+  MonthlySchedule,
+} from "../../lib/electron/parsers/academicCalender.parser";
 
-export async function getAcademicCalendarService() {
+type AcademicCalendarResponse =
+  | { success: true; data: SemesterMonth[] }
+  | { success: false; error: string };
+type CalendarViewResponse =
+  | { success: true; data: MonthlySchedule }
+  | { success: false; error: string };
+
+export async function getAcademicCalendarService(): Promise<AcademicCalendarResponse> {
   console.log("getAcademicCalendarService called");
   try {
     const authTokens = getAuthTokens();
@@ -57,15 +71,24 @@ export async function getAcademicCalendarService() {
       data: parsedData,
     };
   } catch (err: unknown) {
-    console.error("Error in getAcademicCalendarService:", err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    try {
+      return await handleAuthErrorAndRetry(err, () =>
+        getAcademicCalendarService(),
+      );
+    } catch (handledErr) {
+      console.error("Get academic calendar error:", handledErr);
+      return {
+        success: false,
+        error:
+          handledErr instanceof Error ? handledErr.message : String(handledErr),
+      };
+    }
   }
 }
 
-export async function getCalendarViewService(calDate: string) {
+export async function getCalendarViewService(
+  calDate: string,
+): Promise<CalendarViewResponse> {
   console.log("getCalendarViewService called with calDate:", calDate);
   try {
     const authTokens = getAuthTokens();
@@ -124,15 +147,17 @@ export async function getCalendarViewService(calDate: string) {
       data: parsedCalendar,
     };
   } catch (err: unknown) {
-    console.error("Error in getCalendarViewService:", err);
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : err
-            ? String(err)
-            : "Unknown error",
-    };
+    try {
+      return await handleAuthErrorAndRetry(err, () =>
+        getCalendarViewService(calDate),
+      );
+    } catch (handledErr) {
+      console.error("Get calendar view error:", handledErr);
+      return {
+        success: false,
+        error:
+          handledErr instanceof Error ? handledErr.message : String(handledErr),
+      };
+    }
   }
 }

@@ -235,7 +235,7 @@ const DashboardSidebar = () => {
 
       {/* Search overlay (centered) */}
       {searchOpen && (
-        <div className="fixed inset-0 z-40 flex items-start justify-center pt-28">
+        <div className="fixed inset-0 z-40 flex items-start justify-center pt-28 hide-scrollbar">
           <div className="fixed inset-0 bg-black/40" onClick={closeSearch} />
           <div className="relative z-50 w-[min(640px,96%)] bg-card rounded-lg shadow-lg border border-border p-4">
             <div className="flex items-center gap-3">
@@ -260,7 +260,7 @@ const DashboardSidebar = () => {
               </button>
             </div>
 
-            <div className="mt-3 max-h-60 overflow-auto">
+            <div className="mt-3 max-h-60 overflow-auto hide-scrollbar">
               {query ? (
                 results && results.length ? (
                   <ul className="space-y-1">

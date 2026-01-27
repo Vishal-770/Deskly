@@ -1,10 +1,13 @@
 import VTOPClient from "../../lib/electron/axios.client";
+import { handleAuthErrorAndRetry } from "./errorHandler";
+
+type LogoutResponse = { success: true } | { success: false; error: string };
 
 export async function logoutUser(
   cookies: string,
   authorizedID: string,
   csrf: string,
-) {
+): Promise<LogoutResponse> {
   try {
     const client = VTOPClient();
 
@@ -27,10 +30,17 @@ export async function logoutUser(
       success: true,
     };
   } catch (err: unknown) {
-    console.error("Logout error:", err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    try {
+      return await handleAuthErrorAndRetry(err, () =>
+        logoutUser(cookies, authorizedID, csrf),
+      );
+    } catch (handledErr) {
+      console.error("Logout error:", handledErr);
+      return {
+        success: false,
+        error:
+          handledErr instanceof Error ? handledErr.message : String(handledErr),
+      };
+    }
   }
 }

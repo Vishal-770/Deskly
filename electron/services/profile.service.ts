@@ -1,10 +1,19 @@
 import VTOPClient from "../../lib/electron/axios.client";
-import { parseStudentHtml } from "../../lib/electron/parseProfileInfo";
+import { handleAuthErrorAndRetry } from "./errorHandler";
+import {
+  parseStudentHtml,
+  ParsedStudentData,
+} from "../../lib/electron/parseProfileInfo";
+
+type ProfileResponse =
+  | { success: true; data: ParsedStudentData; html: string }
+  | { success: false; error: string };
+
 export async function getStudentProfile(
   cookies: string,
   authorizedID: string,
   csrf: string,
-) {
+): Promise<ProfileResponse> {
   try {
     const client = VTOPClient();
 
@@ -34,10 +43,17 @@ export async function getStudentProfile(
       html: profileRes.data,
     };
   } catch (err: unknown) {
-    console.error(err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : String(err),
-    };
+    try {
+      return await handleAuthErrorAndRetry(err, () =>
+        getStudentProfile(cookies, authorizedID, csrf),
+      );
+    } catch (handledErr) {
+      console.error("Get student profile error:", handledErr);
+      return {
+        success: false,
+        error:
+          handledErr instanceof Error ? handledErr.message : String(handledErr),
+      };
+    }
   }
 }

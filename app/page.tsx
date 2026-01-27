@@ -5,6 +5,7 @@ import { LoginForm } from "../components/LoginForm";
 import { useAuth } from "@/components/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Loader from "@/components/Loader";
 
 export default function LoginPage() {
   const { authState, loading } = useAuth();
