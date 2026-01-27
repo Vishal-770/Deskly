@@ -96,14 +96,14 @@ export default function AcademicCalendarPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log("Fetching academic calendar data...");
+      // console.log("Fetching academic calendar data...");
       try {
         if (window.academicCalendar) {
           const result = await window.academicCalendar.get();
-          console.log(
-            "Academic calendar fetch result:",
-            result.success ? "success" : "error",
-          );
+          // console.log(
+          //   "Academic calendar fetch result:",
+          //   result.success ? "success" : "error",
+          // );
           if (result.success) {
             setData(result.data || []);
             // Set first month as active tab if available
@@ -116,10 +116,10 @@ export default function AcademicCalendarPage() {
                 if (window.academicCalendar?.getView) {
                   const viewRes =
                     await window.academicCalendar.getView(firstDate);
-                  console.log(
-                    "Initial calendar view fetch success:",
-                    viewRes.success,
-                  );
+                  // console.log(
+                  //   "Initial calendar view fetch success:",
+                  //   viewRes.success,
+                  // );
                   if (viewRes.success && viewRes.data) {
                     setCalendarData((prev) => ({
                       ...prev,
@@ -157,11 +157,11 @@ export default function AcademicCalendarPage() {
 
     // Fetch calendar data if not already loaded
     if (!calendarData[dateValue]) {
-      console.log("Fetching calendar view for:", dateValue);
+      // console.log("Fetching calendar view for:", dateValue);
       if (window.academicCalendar?.getView) {
         try {
           const result = await window.academicCalendar.getView(dateValue);
-          console.log("Calendar view result success:", result.success);
+          // console.log("Calendar view result success:", result.success);
           if (result.success && result.data) {
             setCalendarData((prev) => ({
               ...prev,

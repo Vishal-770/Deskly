@@ -36,7 +36,7 @@ export async function getStudentProfile(
     const result = parseStudentHtml(profileRes.data);
     // console.log("Profile fetch status:-------------------------");
     // // console.log(profileRes.data.status);
-    console.log(result);
+    // console.log(result);
     return {
       success: true,
       data: result,
