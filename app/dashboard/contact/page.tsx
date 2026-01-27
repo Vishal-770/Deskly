@@ -23,7 +23,7 @@ const ContactPage = () => {
 
     try {
       const result = await window.contactInfo.get();
-      console.log("Contact Info API result:", result);
+      // console.log("Contact Info API result:", result);
 
       if (result.success) {
         setContactData(result.data || []);

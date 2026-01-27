@@ -63,8 +63,6 @@ export const extractCategories = (html: string): Category[] => {
 // const result = extractCategories(htmlString);
 // console.log(result);
 
-
-
 // 1. Define the interface for the extracted course data
 export interface CourseEntry {
   serialNo: number;
@@ -72,10 +70,10 @@ export interface CourseEntry {
   title: string;
   courseType: string; // e.g., 'TH', 'LO', 'PJT', 'ETL'
   credits: number;
-  lectureHours: number;  // L
+  lectureHours: number; // L
   tutorialHours: number; // T
-  practicalHours: number;// P
-  projectHours: number;  // J
+  practicalHours: number; // P
+  projectHours: number; // J
 }
 
 /**
@@ -88,18 +86,20 @@ export const parseCourseTable = (html: string): CourseEntry[] => {
   const courses: CourseEntry[] = [];
 
   // Select the specific table body rows
-  $('table.example tbody tr').each((_, element) => {
+  $("table.example tbody tr").each((_, element) => {
     const row = $(element);
-    const cells = row.find('td');
+    const cells = row.find("td");
 
     // Ensure the row has enough cells before processing
     if (cells.length > 0) {
       // Extract Code: The code is inside a <span> to separate it from the <button>
-      const code = $(cells[1]).find('span').text().trim();
+      const code = $(cells[1]).find("span").text().trim();
 
       // Helper to safely parse numbers
-      const getInt = (index: number) => parseInt($(cells[index]).text().trim(), 10) || 0;
-      const getFloat = (index: number) => parseFloat($(cells[index]).text().trim()) || 0;
+      const getInt = (index: number) =>
+        parseInt($(cells[index]).text().trim(), 10) || 0;
+      const getFloat = (index: number) =>
+        parseFloat($(cells[index]).text().trim()) || 0;
 
       courses.push({
         serialNo: getInt(0),
@@ -121,5 +121,5 @@ export const parseCourseTable = (html: string): CourseEntry[] => {
 /* --- Usage Example ---
    const rawHtml = `... your html string ...`;
    const data = parseCourseTable(rawHtml);
-   console.log(data);
+   // console.log(data);
 */

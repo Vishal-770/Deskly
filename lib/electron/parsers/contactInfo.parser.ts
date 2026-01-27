@@ -1,4 +1,4 @@
-import * as cheerio from 'cheerio';
+import * as cheerio from "cheerio";
 
 // 1. Define the interface for the contact data
 export interface ContactDetail {
@@ -18,28 +18,33 @@ export const parseContactDetails = (html: string): ContactDetail[] => {
 
   // Iterate through each contact card
   // We target the specific card classes used in the grid
-  $('.col .card.rounded-3').each((_, element) => {
+  $(".col .card.rounded-3").each((_, element) => {
     const card = $(element);
 
     // 1. Extract Department Name
     // Located inside the card header's <strong> tag
-    const department = card.find('.card-header strong').text().trim();
+    const department = card.find(".card-header strong").text().trim();
 
     // 2. Extract Description
-    // It's the first paragraph in the card body. 
+    // It's the first paragraph in the card body.
     // We use .replace(/\s+/g, ' ') to squash newlines and extra spaces into a single space.
-    const description = card.find('.card-body p').first().text().replace(/\s+/g, ' ').trim();
+    const description = card
+      .find(".card-body p")
+      .first()
+      .text()
+      .replace(/\s+/g, " ")
+      .trim();
 
     // 3. Extract Email
     // It's the paragraph with the 'text-success' class
-    const email = card.find('.card-body p.text-success').text().trim();
+    const email = card.find(".card-body p.text-success").text().trim();
 
     // Only add if meaningful data exists
     if (department || email) {
       contacts.push({
         department,
         description,
-        email
+        email,
       });
     }
   });
@@ -50,5 +55,5 @@ export const parseContactDetails = (html: string): ContactDetail[] => {
 /* --- Usage Example ---
    const rawHtml = `... your html string ...`;
    const result = parseContactDetails(rawHtml);
-   console.log(JSON.stringify(result, null, 2));
+   // console.log(JSON.stringify(result, null, 2));
 */

@@ -57,7 +57,7 @@ export async function getContentPage(): Promise<{
         },
       },
     );
-    console.log("STATUS:", contentRes.status);
+    // console.log("STATUS:", contentRes.status);
     // Parse the HTML using the improved extraction function
     const attendanceData = await extractAttendanceFromHTML(contentRes.data);
 

@@ -35,7 +35,7 @@ export async function getContactInfo(
         },
       },
     );
-    console.log("Contact Info Response:", parseContactDetails(contactRes.data));
+    // console.log("Contact Info Response:", parseContactDetails(contactRes.data));
     return {
       success: true,
       data: parseContactDetails(contactRes.data),

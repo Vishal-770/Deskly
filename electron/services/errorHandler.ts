@@ -25,9 +25,9 @@ export async function handleAuthErrorAndRetry<T>(
       if (response === true) {
         const newTokens = getAuthTokens();
         if (newTokens) {
-          console.log(
-            "[HANDLE AUTH ERROR] Auto-login successful. Retrying request with new tokens.",
-          );
+          // console.log(
+          //   "[HANDLE AUTH ERROR] Auto-login successful. Retrying request with new tokens.",
+          // );
           return retryCallback(newTokens);
         } else {
           console.error(

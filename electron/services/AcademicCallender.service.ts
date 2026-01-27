@@ -18,31 +18,31 @@ type CalendarViewResponse =
   | { success: false; error: string };
 
 export async function getAcademicCalendarService(): Promise<AcademicCalendarResponse> {
-  console.log("getAcademicCalendarService called");
+  // console.log("getAcademicCalendarService called");
   try {
     const authTokens = getAuthTokens();
-    console.log("Auth tokens:", authTokens ? "found" : "not found");
+    // console.log("Auth tokens:", authTokens ? "found" : "not found");
     if (!authTokens) {
       throw new Error("No auth tokens found");
     }
 
     const { authorizedID, cookies, csrf } = authTokens;
-    console.log(
-      "Auth data - authorizedID:",
-      authorizedID,
-      "csrf length:",
-      csrf.length,
-    );
+    // console.log(
+    //   "Auth data - authorizedID:",
+    //   authorizedID,
+    //   "csrf length:",
+    //   csrf.length,
+    // );
 
     // Get current semester for semSubId
     const semesterInfo = getSemesterInfo();
-    console.log("Semester info:", semesterInfo);
+    // console.log("Semester info:", semesterInfo);
     if (!semesterInfo) {
       throw new Error("No semester info found");
     }
 
     const client = VTOPClient();
-    console.log("Making API request with semSubId:", semesterInfo.id);
+    // console.log("Making API request with semSubId:", semesterInfo.id);
 
     const response = await client.post(
       "/vtop/getDateForSemesterPreview",
@@ -61,10 +61,10 @@ export async function getAcademicCalendarService(): Promise<AcademicCalendarResp
       },
     );
 
-    console.log("API response status:", response.status);
-    console.log("Response data length:", response.data?.length);
+    // console.log("API response status:", response.status);
+    // console.log("Response data length:", response.data?.length);
     const parsedData = parseSemesterMonths(response.data);
-    console.log(parsedData);
+    // console.log(parsedData);
 
     return {
       success: true,
@@ -89,20 +89,20 @@ export async function getAcademicCalendarService(): Promise<AcademicCalendarResp
 export async function getCalendarViewService(
   calDate: string,
 ): Promise<CalendarViewResponse> {
-  console.log("getCalendarViewService called with calDate:", calDate);
+  // console.log("getCalendarViewService called with calDate:", calDate);
   try {
     const authTokens = getAuthTokens();
-    console.log("Auth tokens:", authTokens ? "found" : "not found");
+    // console.log("Auth tokens:", authTokens ? "found" : "not found");
     if (!authTokens) {
       throw new Error("No auth tokens found");
     }
 
     const { authorizedID, cookies, csrf } = authTokens;
-    console.log("_csrf:", csrf);
+    // console.log("_csrf:", csrf);
 
     // Get current semester for semSubId
     const semesterInfo = getSemesterInfo();
-    console.log("Semester info:", semesterInfo);
+    // console.log("Semester info:", semesterInfo);
     if (!semesterInfo) {
       throw new Error("No semester info found");
     }
@@ -127,9 +127,9 @@ export async function getCalendarViewService(
       },
     );
 
-    console.log("API response status:", response.status);
-    console.log("Response data length:", response.data);
-    console.log("HTML preview:", response.data.substring(0, 1000));
+    // console.log("API response status:", response.status);
+    // console.log("Response data length:", response.data);
+    // console.log("HTML preview:", response.data.substring(0, 1000));
     let parsedCalendar;
     try {
       parsedCalendar = parseSimpleAttendance(response.data);
@@ -140,7 +140,7 @@ export async function getCalendarViewService(
         error: "Failed to parse calendar data",
       };
     }
-    console.log("Parsed calendar:", parsedCalendar);
+    // console.log("Parsed calendar:", parsedCalendar);
 
     return {
       success: true,
