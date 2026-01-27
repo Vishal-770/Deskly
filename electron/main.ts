@@ -1,4 +1,5 @@
 import { app, protocol, net } from "electron";
+import { autoUpdater } from "electron-updater";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -112,7 +113,10 @@ app.whenReady().then(() => {
 
   initWindow();
 
-  // Auto-updater logic removed
+  // Auto-updater: check for updates in production (packaged) only
+  if (app.isPackaged) {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
 });
 
 app.on("window-all-closed", () => {
