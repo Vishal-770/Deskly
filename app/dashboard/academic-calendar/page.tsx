@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Loader from "@/components/Loader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "lucide-react";
+// Swiper for horizontal swipe on calendar
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 
 /* -------------------- Types -------------------- */
 
@@ -105,7 +108,33 @@ export default function AcademicCalendarPage() {
             setData(result.data || []);
             // Set first month as active tab if available
             if (result.data && result.data.length > 0) {
-              setActiveTab(result.data[0].dateValue);
+              const firstDate = result.data[0].dateValue;
+              setActiveTab(firstDate);
+
+              // Immediately fetch the view for the first month so it shows on mount
+              try {
+                if (window.academicCalendar?.getView) {
+                  const viewRes =
+                    await window.academicCalendar.getView(firstDate);
+                  console.log(
+                    "Initial calendar view fetch success:",
+                    viewRes.success,
+                  );
+                  if (viewRes.success && viewRes.data) {
+                    setCalendarData((prev) => ({
+                      ...prev,
+                      [firstDate]: viewRes.data as MonthlySchedule,
+                    }));
+                  } else {
+                    console.error(
+                      "Failed to fetch initial calendar view:",
+                      viewRes.error,
+                    );
+                  }
+                }
+              } catch (err) {
+                console.error("Error fetching initial calendar view:", err);
+              }
             }
           } else {
             setError(result.error || "Failed to fetch academic calendar");
@@ -178,16 +207,16 @@ export default function AcademicCalendarPage() {
   return (
     <div className="h-full w-full bg-background flex flex-col">
       {/* Header */}
-      <header className="border-b border-border px-6 py-6 bg-background">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary">
-            <Calendar className="w-5 h-5" />
+      <header className="border-b border-border px-4 sm:px-6 py-4 bg-background">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 text-primary">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground">
               Academic Calendar
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               View important academic dates and schedules
             </p>
           </div>
@@ -201,13 +230,13 @@ export default function AcademicCalendarPage() {
           onValueChange={handleTabChange}
           className="h-full flex flex-col"
         >
-          <div className="border-b border-border bg-background px-6 py-4">
-            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 gap-1 bg-background">
+          <div className="border-b border-border bg-background px-4 sm:px-6 py-3">
+            <TabsList className="flex w-full gap-1 bg-background overflow-x-auto hide-scrollbar snap-x snap-mandatory px-1 -mx-1">
               {data.map((item) => (
                 <TabsTrigger
                   key={item.dateValue}
                   value={item.dateValue}
-                  className="text-xs px-2 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-background hover:bg-muted/50"
+                  className="shrink-0 min-w-16 text-xs px-2 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground bg-background hover:bg-muted/50 text-center snap-start"
                 >
                   {item.label.split(" ")[0]}
                 </TabsTrigger>
@@ -215,7 +244,7 @@ export default function AcademicCalendarPage() {
             </TabsList>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto hide-scrollbar p-6">
             {data.map((item) => (
               <TabsContent
                 key={item.dateValue}
@@ -233,57 +262,81 @@ export default function AcademicCalendarPage() {
                       </div>
                     </div>
 
-                    <div className="bg-background rounded-lg border border-border p-6">
-                      <div className="grid grid-cols-7 gap-1 mb-4">
-                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                          (day) => (
-                            <div
-                              key={day}
-                              className="p-3 font-semibold text-center text-muted-foreground text-sm"
-                            >
-                              {day}
-                            </div>
-                          ),
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-7 gap-1">
-                        {createCalendarGrid(
-                          calendarData[item.dateValue].month,
-                          calendarData[item.dateValue].days,
-                        ).map((day, index) => (
-                          <div
-                            key={index}
-                            className={`min-h-[100px] p-3 border border-border/50 rounded-md bg-background hover:bg-muted/30 transition-colors ${
-                              day ? "cursor-pointer" : ""
-                            }`}
-                          >
-                            {day && (
-                              <>
-                                <div className="font-semibold text-sm mb-3 text-foreground">
-                                  {day.date}
-                                </div>
-                                {day.content.length > 0 && (
-                                  <ul className="space-y-1">
-                                    {day.content.map((line, lineIndex) => (
-                                      <li
-                                        key={lineIndex}
-                                        className="text-xs text-muted-foreground leading-tight flex items-start gap-1"
-                                      >
-                                        <span className="text-primary mt-[-1px]">
-                                          •
-                                        </span>
-                                        <span className="flex-1">{line}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-                              </>
-                            )}
+                    {/* Swiper wrapper: enables touch swipe horizontally while hiding native scrollbar */}
+                    <Swiper
+                      spaceBetween={12}
+                      slidesPerView={"auto"}
+                      // disable free mode so swiper snaps to whole slides
+                      freeMode={false}
+                      // group slides automatically by their width so swipes land on full slides
+                      slidesPerGroupAuto={true}
+                      // remove resistance at edges so content doesn't stretch/bounce
+                      resistanceRatio={0}
+                      grabCursor={true}
+                      className="hide-scrollbar -mx-6 px-6"
+                    >
+                      <SwiperSlide style={{ width: 1400 }} className="w-350!">
+                        <div className="min-w-350 bg-background rounded-lg border border-border p-6">
+                          <div className="grid grid-cols-7 gap-1 mb-3">
+                            {[
+                              "Sun",
+                              "Mon",
+                              "Tue",
+                              "Wed",
+                              "Thu",
+                              "Fri",
+                              "Sat",
+                            ].map((day) => (
+                              <div
+                                key={day}
+                                className="p-2 sm:p-3 font-semibold text-center text-muted-foreground text-xs sm:text-sm"
+                              >
+                                {day}
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
+
+                          <div className="grid grid-cols-7 gap-1">
+                            {createCalendarGrid(
+                              calendarData[item.dateValue].month,
+                              calendarData[item.dateValue].days,
+                            ).map((day, index) => (
+                              <div
+                                key={index}
+                                className={`min-h-16 sm:min-h-25 p-2 sm:p-3 border border-border/50 rounded-md bg-background hover:bg-muted/30 transition-colors ${
+                                  day ? "cursor-pointer" : ""
+                                }`}
+                              >
+                                {day && (
+                                  <>
+                                    <div className="font-semibold text-sm sm:text-sm mb-2 sm:mb-3 text-foreground">
+                                      {day.date}
+                                    </div>
+                                    {day.content.length > 0 && (
+                                      <ul className="space-y-1">
+                                        {day.content.map((line, lineIndex) => (
+                                          <li
+                                            key={lineIndex}
+                                            className="text-xs text-muted-foreground leading-tight flex items-start gap-1"
+                                          >
+                                            <span className="text-primary -mt-px">
+                                              •
+                                            </span>
+                                            <span className="flex-1">
+                                              {line}
+                                            </span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </SwiperSlide>
+                    </Swiper>
                   </div>
                 ) : (
                   <div className="h-full flex items-center justify-center">

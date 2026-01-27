@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Course,
-  CoursesResponse,
-  WeeklyScheduleResponse,
-  AttendanceResponse,
-} from "../../types/renderer/Course.types";
+import { Course } from "../../types/renderer/Course.types";
 import { CGPAData } from "../../types/electron/system.types";
 import { WeeklySchedule } from "../../types/electron/TimeTable.types";
-import { StudentMarkEntry } from "../../types/electron/marks.types";
+
 import {
   BarChart,
   Bar,
@@ -25,9 +20,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../../components/ui/chart";
-import { useSemester } from "@/components/useSemester";
+
 import Loader from "../../components/Loader";
-import { Button } from "../../components/ui/button";
 
 /* -------------------- Small Helpers -------------------- */
 
@@ -200,35 +194,6 @@ export default function Dashboard() {
             <p className="text-muted-foreground">Semester: {semester}</p>
           )}
         </div>
-        <Button
-          onClick={async () => {
-            console.log(
-              "Button clicked - checking window.academicCalendar:",
-              window.academicCalendar,
-            );
-            if (!window.academicCalendar) {
-              console.error("window.academicCalendar is not defined");
-              return;
-            }
-
-            try {
-              console.log("Calling window.academicCalendar.get()...");
-              const result = await window.academicCalendar.get();
-              console.log("Received result:", result);
-
-              if (result.success) {
-                console.log("Academic Calendar HTML:", result.html);
-              } else {
-                console.error("Error:", result.error);
-              }
-            } catch (error) {
-              console.error("Exception during API call:", error);
-            }
-          }}
-          variant="outline"
-        >
-          Get Academic Calendar
-        </Button>
       </header>
 
       {/* Today's Classes */}
