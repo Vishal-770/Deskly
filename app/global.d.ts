@@ -7,7 +7,7 @@ import {
 } from "@/types/renderer/Course.types";
 import { Semester } from "@/types/electron/Semster.types";
 import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
-import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
+import { ImportantProfileData } from "@/lib/electron/parseProfileInfo";
 import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { Category } from "@/types/electron/curriculum.types";
@@ -78,7 +78,7 @@ declare global {
         csrf: string,
       ) => Promise<{
         success: boolean;
-        data?: ParsedStudentData;
+        data?: ImportantProfileData;
         html?: string;
         error?: string;
       }>;

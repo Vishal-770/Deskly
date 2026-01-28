@@ -4,7 +4,7 @@ import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
 import { CourseDetails } from "@/types/electron/Course.types";
 import { WeeklySchedule } from "@/types/electron/TimeTable.types";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
-import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
+import { ImportantProfileData } from "@/lib/electron/parseProfileInfo";
 import { Category } from "@/types/electron/curriculum.types";
 import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
@@ -118,7 +118,7 @@ contextBridge.exposeInMainWorld("profile", {
     csrf: string,
   ): Promise<{
     success: boolean;
-    data?: ParsedStudentData;
+    data?: ImportantProfileData;
     html?: string;
     error?: string;
   }> => ipcRenderer.invoke("profile:get", { cookies, authorizedID, csrf }),
