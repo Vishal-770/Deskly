@@ -1,221 +1,132 @@
 import * as cheerio from "cheerio";
 
-// 1. Define Interfaces for the output structure
-interface HeaderInfo {
-  studentName: string;
-  studentImage: string | undefined;
-  registerNumber: string;
-  vitEmail: string;
-  programBranch: string;
-  schoolName: string;
-}
+// --- Interfaces for the Extracted Data ---
 
-interface PersonalInfo {
+export interface StudentDetails {
+  name: string;
+  registerNumber: string;
   applicationNumber: string;
+  program: string;
   dob: string;
   gender: string;
-  bloodGroup: string;
-  mobileNumber: string;
-  nationality: string;
-  // Dynamic key-value map for addresses to handle complexity
-  details: Record<string, string>;
+  mobile: string;
+  vitEmail: string;
+  personalEmail: string;
+  photoUrl: string; // Base64 string or URL
 }
 
-interface EducationalInfo {
-  appliedDegree: string;
-  schoolName: string;
-  yearOfPassing: string;
-  board: string;
-  details: Record<string, string>;
-}
-
-interface FamilyInfo {
-  fatherName: string;
-  motherName: string;
-  fatherMobile: string;
-  motherMobile: string;
-  details: Record<string, string>;
-}
-
-interface ProctorInfo {
+export interface ProctorDetails {
   facultyId: string;
-  facultyName: string;
-  facultyEmail: string;
-  facultyMobile: string;
-  facultyImage: string | undefined;
+  name: string;
+  designation: string;
+  school: string;
   cabin: string;
+  mobile: string;
+  email: string;
+  photoUrl: string; // Base64 string or URL
 }
 
-interface HostelInfo {
+export interface HostelDetails {
   blockName: string;
-  roomNo: string;
-  messInfo: string;
+  roomNumber: string;
+  bedType: string;
+  messType: string;
 }
 
-export interface ParsedStudentData {
-  header: HeaderInfo;
-  personal: PersonalInfo;
-  education: EducationalInfo;
-  family: FamilyInfo;
-  proctor: ProctorInfo;
-  hostel: HostelInfo;
+export interface ImportantProfileData {
+  student: StudentDetails;
+  proctor: ProctorDetails;
+  hostel: HostelDetails;
 }
 
-// 2. Helper to clean string inputs
-const cleanText = (text: string): string => {
-  return text.replace(/\s+/g, " ").trim();
-};
+// --- Parsing Function ---
 
-// 3. Helper to convert table rows into a key-value object
-// Handles section headers (blue rows) to prefix keys (e.g., "FATHER_mobile")
-const parseTableToMap = (
-  $: cheerio.CheerioAPI,
-  containerId: string,
-): Record<string, string> => {
-  const data: Record<string, string> = {};
-  let currentPrefix = "";
+/**
+ * Extracts important student, proctor, and hostel information (including images)
+ * from the VIT Student Profile HTML string.
+ * @param htmlString The raw HTML content.
+ * @returns ImportantProfileData object.
+ */
+export function parseStudentProfile(htmlString: string): ImportantProfileData {
+  const $ = cheerio.load(htmlString);
 
-  $(`#${containerId} table tr`).each((_, elem) => {
-    const tds = $(elem).find("td");
+  // Helper to clean whitespace
+  const clean = (text: string) => text.replace(/\s+/g, " ").trim();
 
-    // Check for Section Header (Blue background)
-    if (tds.length === 1 || tds.attr("colspan") === "3") {
-      const headerText = $(elem).text().trim();
-      if (headerText) {
-        currentPrefix = headerText.replace(/\s/g, "_").toUpperCase() + "_";
-      }
-      return; // Skip to next row
-    }
-
-    // Standard Key-Value Row
-    if (tds.length >= 2) {
-      let key = $(tds[0])
-        .text()
-        .trim()
-        .replace(/[:]/g, "")
-        .replace(/\s+/g, "_")
-        .toLowerCase();
-      const value = $(tds[1]).text().trim();
-
-      if (key && value) {
-        // If we are under a section header, prefix the key
-        if (currentPrefix) {
-          key = currentPrefix.toLowerCase() + key;
-        }
-        data[key] = value;
-      }
-    }
-  });
-
-  return data;
-};
-
-// 4. Main Parsing Function
-export function parseStudentHtml(htmlContent: string): ParsedStudentData {
-  const $ = cheerio.load(htmlContent);
-
-  // --- A. Parse Header Section ---
-  const headerCard = $(".card .row").first();
-
-  // Helper to find label sibling values
-  const getLabelValue = (labelTextStart: string): string => {
-    const label = headerCard.find(`label:contains("${labelTextStart}")`);
-    // The value is usually in the immediate next label or sibling
-    return cleanText(label.next("label").text());
-  };
-
-  const header: HeaderInfo = {
-    studentName: cleanText(headerCard.find("p").text()),
-    studentImage: headerCard.find("img").attr("src"),
-    registerNumber: getLabelValue("REGISTER NUMBER"),
-    vitEmail: getLabelValue("VIT EMAIL"),
-    programBranch: getLabelValue("PROGRAM & BRANCH"),
-    schoolName: getLabelValue("SCHOOL NAME"),
-  };
-
-  // --- B. Parse Accordion Sections ---
-
-  // 1. Personal Information (collapseOne)
-  const personalMap = parseTableToMap($, "collapseOne");
-  const personal: PersonalInfo = {
-    applicationNumber: personalMap["application_number"] || "",
-    dob: personalMap["date_of_birth"] || "",
-    gender: personalMap["gender"] || "",
-    bloodGroup: personalMap["blood_group"] || "",
-    mobileNumber: personalMap["mobile_number"] || "",
-    nationality: personalMap["nationality"] || "",
-    details: personalMap, // Store rest of data (addresses) here
-  };
-
-  // 2. Educational Information (collapseTwo)
-  const eduMap = parseTableToMap($, "collapseTwo");
-
-  // Find the correct year of passing key
-  let yearOfPassingKey = "year_of_passing/_passed";
-  if (!eduMap[yearOfPassingKey]) {
-    // Try alternative keys
-    const possibleKeys = Object.keys(eduMap).filter(
-      (key) =>
-        key.includes("year") &&
-        (key.includes("passing") || key.includes("passed")),
+  // Helper to find value in tables based on the Label text
+  // It looks for a <td> containing the label, then grabs the next <td>'s text.
+  const getTableValue = (contextSelector: string, label: string): string => {
+    // Escape special regex characters in label just in case
+    return clean(
+      $(contextSelector)
+        .find(`td:contains("${label}")`)
+        .first() // Ensure we get the first match in case of duplicates
+        .next("td")
+        .text(),
     );
-    if (possibleKeys.length > 0) {
-      yearOfPassingKey = possibleKeys[0];
-    }
-  }
-
-  const education: EducationalInfo = {
-    appliedDegree: eduMap["applied_degree"] || "",
-    schoolName: eduMap["school_name"] || "",
-    board: eduMap["board_/_university"] || "",
-    yearOfPassing: eduMap[yearOfPassingKey] || "",
-    details: eduMap,
   };
 
-  // 3. Family Information (collapseThree)
-  // Note: The logic in parseTableToMap handles "FATHER DETAILS" prefixing
-  const famMap = parseTableToMap($, "collapseThree");
-  const family: FamilyInfo = {
-    fatherName: famMap["father_details_father_name"] || "",
-    motherName: famMap["mother_details_name"] || "",
-    fatherMobile: famMap["father_details_mobile_number"] || "",
-    motherMobile: famMap["mother_details_mobile_number"] || "",
-    details: famMap,
+  // --- 1. Extract Student Details ---
+
+  // Student basic info is often in the top card or #collapseOne
+  const studentName = clean($(".card .col-4 p").text());
+  const studentImage = $(".card .col-4 img").attr("src") || "";
+
+  // Use hidden inputs if available (more reliable), otherwise parse table
+  const regNoInput = $("#regno").val() as string;
+  const appNoInput = $("#applno").val() as string;
+
+  const student: StudentDetails = {
+    name: studentName,
+    photoUrl: studentImage,
+    registerNumber:
+      regNoInput || getTableValue("#collapseOne", "REGISTER NUMBER"),
+    applicationNumber:
+      appNoInput || getTableValue("#collapseOne", "APPLICATION NUMBER"),
+    // Some fields might be in top labels or the table
+    program: clean(
+      $("label:contains('PROGRAM & BRANCH')").next("label").text(),
+    ),
+    dob: getTableValue("#collapseOne", "DATE OF BIRTH"),
+    gender: getTableValue("#collapseOne", "GENDER"),
+    mobile: getTableValue("#collapseOne", "MOBILE NUMBER"),
+    vitEmail: clean($("label:contains('VIT EMAIL')").next("label").text()),
+    personalEmail: getTableValue("#collapseOne", "EMAIL"),
   };
 
-  // 4. Proctor Information (collapseFour)
-  // Special case: Contains an image in the table
-  const proctorMap = parseTableToMap($, "collapseFour");
-  const proctorImage = $("#collapseFour table img").attr("src");
+  // --- 2. Extract Proctor Details ---
+  // Located in #collapseFour
 
-  const proctor: ProctorInfo = {
-    facultyId: proctorMap["faculty_id"] || "",
-    facultyName: proctorMap["faculty_name"] || "",
-    facultyEmail: proctorMap["faculty_email"] || "",
-    facultyMobile: proctorMap["faculty_mobile_number"] || "",
-    cabin: proctorMap["cabin"] || "",
-    facultyImage: proctorImage,
+  const proctorImage = $("#collapseFour table img").attr("src") || "";
+
+  const proctor: ProctorDetails = {
+    facultyId: getTableValue("#collapseFour", "FACULTY ID"),
+    name: getTableValue("#collapseFour", "FACULTY NAME"),
+    designation: getTableValue("#collapseFour", "DESIGNATION"), // or FACULTY DESIGNATION
+    school: getTableValue("#collapseFour", "SCHOOL"),
+    cabin: getTableValue("#collapseFour", "CABIN"),
+    email:
+      getTableValue("#collapseFour", "FACULTY EMAIL") ||
+      getTableValue("#collapseFour", "EMAIL"),
+    mobile:
+      getTableValue("#collapseFour", "FACULTY MOBILE NUMBER") ||
+      getTableValue("#collapseFour", "MOBILE"),
+    photoUrl: proctorImage,
   };
 
-  // 5. Hostel Information (collapseFive)
-  const hostelMap = parseTableToMap($, "collapseFive");
-  const hostel: HostelInfo = {
-    blockName: hostelMap["block_name"] || "",
-    roomNo: hostelMap["room_no"] || "",
-    messInfo: hostelMap["mess_information"] || "",
+  // --- 3. Extract Hostel Details ---
+  // Located in #collapseFive
+
+  const hostel: HostelDetails = {
+    blockName: getTableValue("#collapseFive", "Block Name"),
+    roomNumber: getTableValue("#collapseFive", "Room No"),
+    bedType: getTableValue("#collapseFive", "Bed Type"),
+    messType: getTableValue("#collapseFive", "Mess Information"),
   };
 
   return {
-    header,
-    personal,
-    education,
-    family,
+    student,
     proctor,
     hostel,
   };
 }
-
-// --- Usage Example ---
-// const htmlInput = `... paste your html string here ...`;
-// const result = parseStudentHtml(htmlInput);
-// console.log(JSON.stringify(result, null, 2));

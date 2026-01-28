@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/components/useAuth";
-import { ParsedStudentData } from "@/lib/electron/parseProfileInfo";
+import { ImportantProfileData } from "@/lib/electron/parseProfileInfo";
 import Loader from "@/components/Loader";
 
 /* -------------------- Small Helpers -------------------- */
@@ -23,7 +23,7 @@ const ProfilePage = () => {
   const { authState, loading, getAuthTokens } = useAuth();
 
   const [userImage, setUserImage] = useState<string | null>(null);
-  const [profileData, setProfileData] = useState<ParsedStudentData | null>(
+  const [profileData, setProfileData] = useState<ImportantProfileData | null>(
     null,
   );
   const [error, setError] = useState<string | null>(null);
@@ -97,14 +97,7 @@ const ProfilePage = () => {
   }
 
   if (!profileData) {
-    return (
-      <div className="h-full w-full flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <div className="animate-spin h-6 w-6 border-b-2 border-primary rounded-full" />
-          <span className="text-muted-foreground">Fetching profile data…</span>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   /* -------------------- UI -------------------- */
@@ -115,9 +108,9 @@ const ProfilePage = () => {
       <section className="flex flex-col lg:flex-row lg:items-center gap-8">
         {/* Image */}
         <div className="flex justify-center lg:justify-start">
-          {profileData.header.studentImage || userImage ? (
+          {profileData.student.photoUrl || userImage ? (
             <Image
-              src={profileData.header.studentImage || userImage!}
+              src={profileData.student.photoUrl || userImage!}
               alt="Profile"
               width={140}
               height={140}
@@ -125,27 +118,25 @@ const ProfilePage = () => {
             />
           ) : (
             <div className="w-36 h-36 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-4xl font-bold">
-              {profileData.header.studentName.charAt(0).toUpperCase()}
+              {profileData.student.name.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
 
         {/* Identity */}
         <div className="flex-1 text-center lg:text-left space-y-3">
-          <h1 className="text-3xl font-bold">
-            {profileData.header.studentName}
-          </h1>
+          <h1 className="text-3xl font-bold">{profileData.student.name}</h1>
           <p className="text-lg text-muted-foreground">
-            {profileData.header.registerNumber}
+            {profileData.student.registerNumber}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm mt-4">
-            <InfoItem label="VIT Email" value={profileData.header.vitEmail} />
+            <InfoItem label="VIT Email" value={profileData.student.vitEmail} />
             <InfoItem
               label="Program & Branch"
-              value={profileData.header.programBranch}
+              value={profileData.student.program}
             />
-            <InfoItem label="School" value={profileData.header.schoolName} />
+            <InfoItem label="School" value={profileData.proctor.school} />
           </div>
         </div>
       </section>
@@ -159,120 +150,16 @@ const ProfilePage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10">
           <InfoItem
             label="Application Number"
-            value={profileData.personal.applicationNumber}
+            value={profileData.student.applicationNumber}
           />
-          <InfoItem label="Date of Birth" value={profileData.personal.dob} />
-          <InfoItem label="Gender" value={profileData.personal.gender} />
+          <InfoItem label="Date of Birth" value={profileData.student.dob} />
+          <InfoItem label="Gender" value={profileData.student.gender} />
+          <InfoItem label="Mobile Number" value={profileData.student.mobile} />
           <InfoItem
-            label="Blood Group"
-            value={profileData.personal.bloodGroup}
-          />
-          <InfoItem
-            label="Mobile Number"
-            value={profileData.personal.mobileNumber}
-          />
-          <InfoItem
-            label="Nationality"
-            value={profileData.personal.nationality}
+            label="Personal Email"
+            value={profileData.student.personalEmail}
           />
         </div>
-
-        {Object.keys(profileData.personal.details).length > 0 && (
-          <div className="pt-4 space-y-2">
-            <h3 className="font-semibold text-primary">Additional Details</h3>
-            {Object.entries(profileData.personal.details).map(
-              ([key, value]) => (
-                <InfoItem
-                  key={key}
-                  label={key
-                    .replace(/_/g, " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}
-                  value={value}
-                />
-              ),
-            )}
-          </div>
-        )}
-      </section>
-
-      <Divider />
-
-      {/* ================= EDUCATION ================= */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-semibold">Educational Information</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10">
-          <InfoItem
-            label="Applied Degree"
-            value={profileData.education.appliedDegree}
-          />
-          <InfoItem
-            label="School Name"
-            value={profileData.education.schoolName}
-          />
-          <InfoItem
-            label="Board / University"
-            value={profileData.education.board}
-          />
-          <InfoItem
-            label="Year of Passing"
-            value={profileData.education.yearOfPassing}
-          />
-        </div>
-
-        {Object.keys(profileData.education.details).length > 0 && (
-          <div className="pt-4 space-y-2">
-            <h3 className="font-semibold text-primary">Additional Details</h3>
-            {Object.entries(profileData.education.details).map(
-              ([key, value]) => (
-                <InfoItem
-                  key={key}
-                  label={key
-                    .replace(/_/g, " ")
-                    .replace(/\b\w/g, (l) => l.toUpperCase())}
-                  value={value}
-                />
-              ),
-            )}
-          </div>
-        )}
-      </section>
-
-      <Divider />
-
-      {/* ================= FAMILY ================= */}
-      <section className="space-y-6">
-        <h2 className="text-2xl font-semibold">Family Information</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10">
-          <InfoItem label="Father Name" value={profileData.family.fatherName} />
-          <InfoItem
-            label="Father Mobile"
-            value={profileData.family.fatherMobile}
-          />
-          <InfoItem label="Mother Name" value={profileData.family.motherName} />
-          <InfoItem
-            label="Mother Mobile"
-            value={profileData.family.motherMobile}
-          />
-        </div>
-
-        {Object.keys(profileData.family.details).length > 0 && (
-          <div className="pt-4 space-y-2">
-            <h3 className="font-semibold text-primary">Additional Details</h3>
-            {Object.entries(profileData.family.details).map(([key, value]) => (
-              <InfoItem
-                key={key}
-                label={key
-                  .replace(/father_details_/g, "")
-                  .replace(/mother_details_/g, "")
-                  .replace(/_/g, " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase())}
-                value={value}
-              />
-            ))}
-          </div>
-        )}
       </section>
 
       <Divider />
@@ -282,9 +169,9 @@ const ProfilePage = () => {
         <h2 className="text-2xl font-semibold">Proctor Information</h2>
 
         <div className="flex flex-col md:flex-row gap-8 items-start">
-          {profileData.proctor.facultyImage && (
+          {profileData.proctor.photoUrl && (
             <Image
-              src={profileData.proctor.facultyImage}
+              src={profileData.proctor.photoUrl}
               alt="Proctor"
               width={110}
               height={110}
@@ -297,17 +184,11 @@ const ProfilePage = () => {
               label="Faculty ID"
               value={profileData.proctor.facultyId}
             />
-            <InfoItem
-              label="Faculty Name"
-              value={profileData.proctor.facultyName}
-            />
-            <InfoItem
-              label="Faculty Email"
-              value={profileData.proctor.facultyEmail}
-            />
+            <InfoItem label="Faculty Name" value={profileData.proctor.name} />
+            <InfoItem label="Faculty Email" value={profileData.proctor.email} />
             <InfoItem
               label="Faculty Mobile"
-              value={profileData.proctor.facultyMobile}
+              value={profileData.proctor.mobile}
             />
             <InfoItem label="Cabin" value={profileData.proctor.cabin} />
           </div>
@@ -322,10 +203,10 @@ const ProfilePage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10">
           <InfoItem label="Block Name" value={profileData.hostel.blockName} />
-          <InfoItem label="Room Number" value={profileData.hostel.roomNo} />
+          <InfoItem label="Room Number" value={profileData.hostel.roomNumber} />
           <InfoItem
             label="Mess Information"
-            value={profileData.hostel.messInfo}
+            value={profileData.hostel.messType}
           />
         </div>
       </section>

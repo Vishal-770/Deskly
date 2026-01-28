@@ -1,12 +1,12 @@
 import VTOPClient from "../../lib/electron/axios.client";
 import { handleAuthErrorAndRetry } from "./errorHandler";
 import {
-  parseStudentHtml,
-  ParsedStudentData,
+  parseStudentProfile,
+  ImportantProfileData,
 } from "../../lib/electron/parseProfileInfo";
 
 type ProfileResponse =
-  | { success: true; data: ParsedStudentData; html: string }
+  | { success: true; data: ImportantProfileData; html: string }
   | { success: false; error: string };
 
 export async function getStudentProfile(
@@ -33,7 +33,7 @@ export async function getStudentProfile(
         },
       },
     );
-    const result = parseStudentHtml(profileRes.data);
+    const result = parseStudentProfile(profileRes.data);
     // console.log("Profile fetch status:-------------------------");
     // // console.log(profileRes.data.status);
     // console.log(result);
