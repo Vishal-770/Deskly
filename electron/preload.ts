@@ -10,8 +10,18 @@ import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
 import { AttendanceRecord as DetailRecord } from "@/lib/electron/parsers/ParseAttendacneDetails";
 import { contextBridge, ipcRenderer } from "electron";
+import type { UpdateInfo } from "builder-util-runtime";
 
 console.log("Preload script loaded");
+
+// Updater types
+interface ProgressInfo {
+  total: number;
+  delta: number;
+  transferred: number;
+  percent: number;
+  bytesPerSecond: number;
+}
 
 type SetAuthTokensPayload = {
   authorizedID: string;
@@ -245,4 +255,24 @@ contextBridge.exposeInMainWorld("timetable", {
     semesters?: Semester[];
     error?: string;
   }> => ipcRenderer.invoke("timetable:get"),
+});
+
+contextBridge.exposeInMainWorld("updater", {
+  checkForUpdates: () => ipcRenderer.invoke("updater:check"),
+  downloadUpdate: () => ipcRenderer.invoke("updater:download"),
+  installUpdate: () => ipcRenderer.invoke("updater:install"),
+  onUpdateChecking: (callback: () => void) =>
+    ipcRenderer.on("updater:checking", callback),
+  onUpdateAvailable: (callback: (info: UpdateInfo) => void) =>
+    ipcRenderer.on("updater:available", (_event, info) => callback(info)),
+  onUpdateNotAvailable: (callback: (info: UpdateInfo) => void) =>
+    ipcRenderer.on("updater:not-available", (_event, info) => callback(info)),
+  onUpdateError: (callback: (error: string) => void) =>
+    ipcRenderer.on("updater:error", (_event, error) => callback(error)),
+  onDownloadProgress: (callback: (progress: ProgressInfo) => void) =>
+    ipcRenderer.on("updater:progress", (_event, progress) =>
+      callback(progress),
+    ),
+  onUpdateDownloaded: (callback: (info: UpdateInfo) => void) =>
+    ipcRenderer.on("updater:downloaded", (_event, info) => callback(info)),
 });

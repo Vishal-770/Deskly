@@ -1,4 +1,4 @@
-import { app, protocol, net } from "electron";
+import { app, protocol, net, dialog } from "electron";
 import { autoUpdater } from "electron-updater";
 import * as path from "path";
 import * as fs from "fs";
@@ -22,13 +22,15 @@ import "./ipc/curriculum.ipc";
 import "./ipc/contactInfo.ipc";
 import "./ipc/attendanceDetail.ipc";
 import "./ipc/academicCalendar.ipc";
+import "./ipc/updater.ipc";
 
 /*******
  * END IPC IMPORTS
  *
  */
 
-import { initWindow } from "./windows/mainWindow";
+import { initWindow, mainWindow } from "./windows/mainWindow";
+import { initUpdaterIPC } from "./ipc/updater.ipc";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -126,7 +128,68 @@ app.whenReady().then(() => {
 
   // Auto-updater: check for updates in production (packaged) only
   if (app.isPackaged) {
-    autoUpdater.checkForUpdatesAndNotify();
+    // Initialize updater IPC
+    initUpdaterIPC();
+
+    // Auto-updater event handlers
+    autoUpdater.on("checking-for-update", () => {
+      console.log("Checking for update...");
+      // Send to renderer if window exists
+      if (mainWindow) {
+        mainWindow.webContents.send("updater:checking");
+      }
+    });
+
+    autoUpdater.on("update-available", (info) => {
+      console.log("Update available:", info.version);
+      if (mainWindow) {
+        mainWindow.webContents.send("updater:available", info);
+      }
+    });
+
+    autoUpdater.on("update-not-available", (info) => {
+      console.log("Update not available");
+      if (mainWindow) {
+        mainWindow.webContents.send("updater:not-available");
+      }
+    });
+
+    autoUpdater.on("error", (err) => {
+      console.error("Update error:", err);
+      if (mainWindow) {
+        mainWindow.webContents.send("updater:error", err.message);
+      }
+    });
+
+    autoUpdater.on("download-progress", (progressObj) => {
+      if (mainWindow) {
+        mainWindow.webContents.send("updater:progress", progressObj);
+      }
+    });
+
+    autoUpdater.on("update-downloaded", (info) => {
+      console.log("Update downloaded:", info.version);
+      if (mainWindow) {
+        mainWindow.webContents.send("updater:downloaded", info);
+
+        // Show dialog asking user to restart
+        const result = dialog.showMessageBoxSync(mainWindow, {
+          type: "info",
+          title: "Update Ready",
+          message:
+            "A new version has been downloaded. Restart the application to apply the update.",
+          buttons: ["Restart", "Later"],
+        });
+        if (result === 0) {
+          autoUpdater.quitAndInstall();
+        }
+      }
+    });
+
+    // Check for updates on app start (with delay to ensure window is ready)
+    setTimeout(() => {
+      autoUpdater.checkForUpdates();
+    }, 3000);
   }
 });
 
