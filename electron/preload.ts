@@ -11,6 +11,8 @@ import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
 import { AttendanceRecord as DetailRecord } from "@/lib/electron/parsers/ParseAttendacneDetails";
 import { contextBridge, ipcRenderer } from "electron";
 import type { UpdateInfo } from "builder-util-runtime";
+import { LaundaryEntry } from "@/types/electron/Laundary.types";
+import { MessMenuResponse, MessType } from "@/types/electron/Mess.types";
 
 console.log("Preload script loaded");
 
@@ -275,4 +277,19 @@ contextBridge.exposeInMainWorld("updater", {
     ),
   onUpdateDownloaded: (callback: (info: UpdateInfo) => void) =>
     ipcRenderer.on("updater:downloaded", (_event, info) => callback(info)),
+});
+
+contextBridge.exposeInMainWorld("laundary", {
+  getSchedule: (
+    block: string,
+  ): Promise<{
+    success: boolean;
+    data?: LaundaryEntry[];
+    error?: string;
+  }> => ipcRenderer.invoke("laundary:getSchedule", block),
+});
+
+contextBridge.exposeInMainWorld("mess", {
+  getMenu: (mess: MessType): Promise<MessMenuResponse> =>
+    ipcRenderer.invoke("mess:getMenu", mess),
 });

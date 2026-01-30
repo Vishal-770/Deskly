@@ -18,6 +18,8 @@ import {
   CalendarDays,
   Search,
   Home,
+  Shirt,
+  ChefHat,
 } from "lucide-react";
 import Fuse from "fuse.js";
 import { useAuth } from "./useAuth";
@@ -96,6 +98,16 @@ const DashboardSidebar = () => {
         label: "Contact",
         href: "/dashboard/contact",
         icon: <Phone className="w-5 h-5" />,
+      },
+      {
+        label: "Laundry",
+        href: "/dashboard/laundry",
+        icon: <Shirt className="w-5 h-5" />,
+      },
+      {
+        label: "Mess",
+        href: "/dashboard/mess",
+        icon: <ChefHat className="w-5 h-5" />,
       },
       {
         label: "Settings",

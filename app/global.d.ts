@@ -13,7 +13,8 @@ import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { Category } from "@/types/electron/curriculum.types";
 import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
-import { MonthlySchedule } from "@/lib/electron/parsers/academicCalender.parser";
+import { LaundaryEntry } from "@/types/electron/Laundary.types";
+import { MessMenuResponse, MessType } from "@/types/renderer/Mess.types";
 
 declare global {
   interface Window {
@@ -116,6 +117,16 @@ declare global {
         data?: MonthlySchedule;
         error?: string;
       }>;
+    };
+    laundary: {
+      getSchedule: (block: string) => Promise<{
+        success: boolean;
+        data?: LaundaryEntry[];
+        error?: string;
+      }>;
+    };
+    mess: {
+      getMenu: (mess: MessType) => Promise<MessMenuResponse>;
     };
     grade: {
       getExamGradeView: () => Promise<{

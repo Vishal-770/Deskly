@@ -23,6 +23,8 @@ import "./ipc/contactInfo.ipc";
 import "./ipc/attendanceDetail.ipc";
 import "./ipc/academicCalendar.ipc";
 import "./ipc/updater.ipc";
+import "./ipc/laundary.ipc";
+import "./ipc/mess.ipc";
 
 /*******
  * END IPC IMPORTS
