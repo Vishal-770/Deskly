@@ -54,8 +54,10 @@ const LaundryPage: React.FC = () => {
     const loadSettings = async () => {
       try {
         const laundryBlock = await window.settings.getLaundryBlock();
-        setSelectedBlock(laundryBlock);
-        fetchLaundary(laundryBlock);
+        setSelectedBlock(laundryBlock || "");
+        if (laundryBlock) {
+          fetchLaundary(laundryBlock);
+        }
       } catch (error) {
         console.error("Failed to load laundry settings:", error);
       } finally {
@@ -95,7 +97,7 @@ const LaundryPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold">Laundry Schedule</h1>
           <p className="text-sm text-muted-foreground">
-            Desktop overview of laundry slots per block
+            View laundry machine availability per block
           </p>
         </div>
       </div>
