@@ -1,5 +1,6 @@
 import { app, protocol, net, dialog } from "electron";
 import { autoUpdater } from "electron-updater";
+import log from "electron-log";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -23,8 +24,10 @@ import "./ipc/contactInfo.ipc";
 import "./ipc/attendanceDetail.ipc";
 import "./ipc/academicCalendar.ipc";
 import "./ipc/updater.ipc";
+
 import "./ipc/laundary.ipc";
 import "./ipc/mess.ipc";
+import "./ipc/settings.ipc";
 
 /*******
  * END IPC IMPORTS
@@ -128,8 +131,18 @@ app.whenReady().then(() => {
 
   initWindow();
 
+  // Initialize event IPC
+
   // Auto-updater: check for updates in production (packaged) only
   if (app.isPackaged) {
+    // Configure logging
+    log.transports.file.level = "info";
+    autoUpdater.logger = log;
+
+    // Configure autoUpdater
+    autoUpdater.autoDownload = false;
+    autoUpdater.autoInstallOnAppQuit = false;
+
     // Initialize updater IPC
     initUpdaterIPC();
 

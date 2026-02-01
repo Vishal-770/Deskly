@@ -1,9 +1,14 @@
 export interface MessMenuItem {
+  Id: number;
+  ncRecordId: string;
+  ncRecordHash: string;
   Day: string;
   Breakfast: string;
   Lunch: string;
   Snacks: string;
   Dinner: string;
+  CreatedAt: string;
+  UpdatedAt: string;
 }
 
 export interface MessMenuResponse {

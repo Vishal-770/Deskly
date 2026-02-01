@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { LaundaryEntry } from "@/types/electron/Laundary.types";
 import { useAuth } from "@/components/useAuth";
 import Loader from "@/components/Loader";
-import { Calendar, Home, WashingMachine } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { WashingMachine } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const BLOCKS = ["A", "B", "CB", "CG", "D1", "D2", "E"];
 
@@ -20,6 +22,11 @@ const LaundryPage: React.FC = () => {
   );
   const [laundaryLoading, setLaundaryLoading] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<string>("");
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
 
   const fetchLaundary = async (block: string) => {
     setLaundaryLoading(true);
@@ -37,6 +44,39 @@ const LaundryPage: React.FC = () => {
       setLaundaryLoading(false);
     }
   };
+
+  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+  const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
+
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const laundryBlock = await window.settings.getLaundryBlock();
+        setSelectedBlock(laundryBlock);
+        fetchLaundary(laundryBlock);
+      } catch (error) {
+        console.error("Failed to load laundry settings:", error);
+      } finally {
+        setSettingsLoaded(true);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const scheduleByDay =
+    laundaryData?.reduce(
+      (acc, entry) => {
+        const day = parseInt(entry.Date);
+        if (!acc[day]) acc[day] = [];
+        if (entry.RoomNumber) {
+          acc[day].push(entry.RoomNumber);
+        }
+        return acc;
+      },
+      {} as Record<number, string[]>,
+    ) || {};
 
   if (loading) return <Loader />;
 
@@ -60,78 +100,92 @@ const LaundryPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid h-[calc(100%-5rem)] grid-cols-[280px_1fr] gap-6">
-        {/* Sidebar */}
-        <Card className="h-full">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Blocks</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {BLOCKS.map((block) => (
-              <Button
-                key={block}
-                variant={selectedBlock === block ? "default" : "outline"}
-                className={cn(
-                  "w-full justify-start gap-2",
-                  selectedBlock === block && "shadow",
-                )}
-                disabled={laundaryLoading}
-                onClick={() => {
-                  setSelectedBlock(block);
-                  fetchLaundary(block);
-                }}
-              >
-                <Home className="h-4 w-4" /> Block {block}
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Main Content */}
-        <Card className="h-full">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">
-              {selectedBlock ? `Block ${selectedBlock} Schedule` : "Schedule"}
-            </CardTitle>
-          </CardHeader>
-          <Separator />
-          <CardContent className="pt-4 h-[calc(100%-4rem)]">
-            {laundaryLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader />
-              </div>
-            ) : laundaryData ? (
-              laundaryData.length ? (
-                <ScrollArea className="h-full pr-4">
-                  <div className="space-y-2">
-                    {laundaryData.map((entry, index) => (
+      <div className="h-[calc(100%-5rem)]">
+        <div className="mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Current Block:
+            </span>
+            <span className="text-sm font-medium">
+              {settingsLoaded
+                ? selectedBlock
+                  ? `Block ${selectedBlock}`
+                  : "Not set"
+                : "Loading..."}
+            </span>
+          </div>
+        </div>
+        <div className="h-[calc(100%-4rem)] py-4">
+          {laundaryLoading ? (
+            <div className="flex h-full items-center justify-center">
+              <Loader />
+            </div>
+          ) : laundaryData ? (
+            laundaryData.length ? (
+              <>
+                <div className="text-center text-sm font-medium mb-4 px-4">
+                  {new Date().toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </div>
+                <div className="overflow-x-auto px-2">
+                  <div className="min-w-[700px] grid grid-cols-7 gap-2 mb-4">
+                    {dayNames.map((day) => (
                       <div
-                        key={index}
-                        className="flex items-center justify-between rounded-md border px-4 py-3 text-sm"
+                        key={day}
+                        className="text-center text-sm font-medium text-muted-foreground py-2"
                       >
-                        <div className="flex items-center gap-3">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>Day {entry.date}</span>
-                        </div>
-                        <span className="text-muted-foreground">
-                          {entry.roomNumber || "—"}
-                        </span>
+                        {day}
                       </div>
                     ))}
                   </div>
-                </ScrollArea>
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  No schedule available
+                  <div className="min-w-[700px] grid grid-cols-7 gap-2">
+                    {Array.from({ length: firstDayOfMonth }, (_, i) => (
+                      <div
+                        key={`empty-${i}`}
+                        className="min-h-16 sm:min-h-20"
+                      ></div>
+                    ))}
+                    {Array.from({ length: daysInMonth }, (_, i) => {
+                      const day = i + 1;
+                      const rooms = scheduleByDay[day] || [];
+                      const displayText =
+                        rooms.length > 0 ? rooms.join(", ") : null;
+                      return (
+                        <div
+                          key={day}
+                          className={`min-h-16 sm:min-h-20 border rounded-md p-1 sm:p-2 text-xs sm:text-sm flex flex-col items-center justify-center ${
+                            displayText
+                              ? "bg-primary/10 border-primary/20"
+                              : "border-muted"
+                          }`}
+                        >
+                          <div className="font-medium text-sm sm:text-base">
+                            {day}
+                          </div>
+                          {displayText && (
+                            <div className="text-muted-foreground text-[10px] sm:text-xs leading-tight text-center mt-1">
+                              {displayText}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              )
+              </>
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                Select a block from the left panel
+                No schedule available
               </div>
-            )}
-          </CardContent>
-        </Card>
+            )
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+              Select a block from the dropdown
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

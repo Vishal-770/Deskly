@@ -68,7 +68,7 @@ export function createWindow() {
   // Log console messages from renderer for debugging
   mainWindow.webContents.on(
     "console-message",
-    (event, level, message, line, sourceId) => {},
+    (_event, _level, _message, _line, _sourceId) => {},
   );
 
   if (isDev) {

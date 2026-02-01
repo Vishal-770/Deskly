@@ -12,7 +12,12 @@ import { AttendanceRecord as DetailRecord } from "@/lib/electron/parsers/ParseAt
 import { contextBridge, ipcRenderer } from "electron";
 import type { UpdateInfo } from "builder-util-runtime";
 import { LaundaryEntry } from "@/types/electron/Laundary.types";
-import { MessMenuResponse, MessType } from "@/types/electron/Mess.types";
+import {
+  MessMenuResponse,
+  MessType,
+  MessMenuItem,
+} from "@/types/electron/Mess.types";
+import { UserSettings } from "@/electron/services/Settings.service";
 
 console.log("Preload script loaded");
 
@@ -290,6 +295,25 @@ contextBridge.exposeInMainWorld("laundary", {
 });
 
 contextBridge.exposeInMainWorld("mess", {
-  getMenu: (mess: MessType): Promise<MessMenuResponse> =>
-    ipcRenderer.invoke("mess:getMenu", mess),
+  getMenu: (
+    mess: MessType,
+  ): Promise<{
+    success: boolean;
+    data?: MessMenuItem[];
+    error?: string;
+  }> => ipcRenderer.invoke("mess:getMenu", mess),
+});
+
+contextBridge.exposeInMainWorld("settings", {
+  getMessType: (): Promise<string> =>
+    ipcRenderer.invoke("settings:getMessType"),
+  setMessType: (messType: string): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke("settings:setMessType", messType),
+  getLaundryBlock: (): Promise<string> =>
+    ipcRenderer.invoke("settings:getLaundryBlock"),
+  setLaundryBlock: (block: string): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke("settings:setLaundryBlock", block),
+  getAll: (): Promise<UserSettings> => ipcRenderer.invoke("settings:getAll"),
+  clearAll: (): Promise<{ success: boolean }> =>
+    ipcRenderer.invoke("settings:clearAll"),
 });

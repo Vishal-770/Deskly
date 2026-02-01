@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   assetPrefix: process.env.NODE_ENV === "production" ? "/" : undefined,
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
   // Ensure trailing slashes for proper routing
   trailingSlash: true,

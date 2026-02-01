@@ -1,16 +1,29 @@
 import { LaundaryEntry } from "../../types/electron/Laundary.types";
-
-const BASE_URL = "https://kanishka-developer.github.io/unmessify/csv";
+const BASE_URL = "https://kanishka-developer.github.io/unmessify/json/en/";
 
 const blockName = {
-  A: "VITC-A-L.csv",
-  B: "VITC-B-L.csv",
-  CB: "VITC-CB-L.csv",
-  CG: "VITC-CG-L.csv",
-  D1: "VITC-D1-L.csv",
-  D2: "VITC-D2-L.csv",
-  E: "VITC-E-L.csv",
+  A: "VITC-A-L.json",
+  B: "VITC-B-L.json",
+  CB: "VITC-CB-L.json",
+  CG: "VITC-CG-L.json",
+  D1: "VITC-D1-L.json",
+  D2: "VITC-D2-L.json",
+  E: "VITC-E-L.json",
 };
+
+export interface LaundaryResponse {
+  list: LaundaryEntry[];
+  pageInfo: {
+    totalRows: number;
+    page: number;
+    pageSize: number;
+    isFirstPage: boolean;
+    isLastPage: boolean;
+  };
+  stats: {
+    dbQueryTime: string;
+  };
+}
 
 export async function fetchLaundarySchedule(
   block: string,
@@ -26,19 +39,9 @@ export async function fetchLaundarySchedule(
     throw new Error(`Failed to fetch laundry schedule: ${response.statusText}`);
   }
 
-  const csvText = await response.text();
-  const lines = csvText.trim().split("\n");
-
-  // Skip header
-  const dataLines = lines.slice(1);
-
-  const entries: LaundaryEntry[] = dataLines.map((line) => {
-    const [dateStr, roomNumber] = line.split(",");
-    return {
-      date: parseInt(dateStr, 10),
-      roomNumber: roomNumber || "",
-    };
-  });
+  const jsonData: LaundaryResponse =
+    (await response.json()) as LaundaryResponse;
+  const entries: LaundaryEntry[] = jsonData.list;
 
   console.log(`Fetched laundry schedule for block ${block}:`, entries);
   return entries;

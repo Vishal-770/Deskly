@@ -1,32 +1,74 @@
-import { parse } from "papaparse";
-const BASE_URL = "https://kanishka-developer.github.io/unmessify/csv/";
+const BASE_URL = "https://kanishka-developer.github.io/unmessify/json/en/";
 
 const messData = {
-  "Veg-mens": "VITC-M-V.csv",
-  "Non-Veg-mens": "VITC-M-N.csv",
-  "Special-mens": "VITC-M-S.csv",
-  "Veg-womens": "VITC-W-V.csv",
-  "Non-Veg-womens": "VITC-W-N.csv",
-  "Special-womens": "VITC-W-S.csv",
+  "Veg-mens": "VITC-M-V.json",
+  "Non-Veg-mens": "VITC-M-N.json",
+  "Special-mens": "VITC-M-S.json",
+  "Veg-womens": "VITC-W-V.json",
+  "Non-Veg-womens": "VITC-W-N.json",
+  "Special-womens": "VITC-W-S.json",
 };
 
 export type MessType = keyof typeof messData;
 
-export async function getMessMenu(mess: MessType) {
+export interface MessMenuItem {
+  Id: number;
+  ncRecordId: string;
+  ncRecordHash: string;
+  Day: string;
+  Breakfast: string;
+  Lunch: string;
+  Snacks: string;
+  Dinner: string;
+  CreatedAt: string;
+  UpdatedAt: string;
+}
+
+export interface MessMenuResponse {
+  list: MessMenuItem[];
+  pageInfo: {
+    totalRows: number;
+    page: number;
+    pageSize: number;
+    isFirstPage: boolean;
+    isLastPage: boolean;
+  };
+  stats: {
+    dbQueryTime: string;
+  };
+}
+
+export async function getMessMenu(
+  mess: MessType,
+): Promise<{ success: boolean; data?: MessMenuItem[]; error?: string }> {
   try {
     const url = BASE_URL + messData[mess];
+    console.log(`[Mess Service] Fetching menu for ${mess} from URL: ${url}`);
+
     const response = await fetch(url);
+    console.log(
+      `[Mess Service] Response status: ${response.status} ${response.statusText}`,
+    );
+
     if (!response.ok) {
+      console.error(
+        `[Mess Service] Failed to fetch mess menu: ${response.statusText}`,
+      );
       throw new Error(`Failed to fetch mess menu: ${response.statusText}`);
     }
-    const csvText = await response.text();
 
-    const parsed = parse(csvText, { header: true, skipEmptyLines: true });
+    const jsonData = (await response.json()) as MessMenuResponse;
+    console.log(
+      `[Mess Service] Successfully fetched data. Items count: ${jsonData.list?.length || 0}`,
+    );
+    console.log("Fetched JSON Data:", jsonData);
+
     return {
       success: true,
-      data: parsed.data,
+      data: jsonData.list,
     };
   } catch (error) {
+    console.error(`[Mess Service] Error occurred:`, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

@@ -186,6 +186,49 @@ declare global {
         error?: string;
       }>;
     };
+    eventHub: {
+      fetch: () => Promise<{
+        success: boolean;
+        html?: string;
+        error?: string;
+      }>;
+    };
+    settings: {
+      getMessType: () => Promise<string | null>;
+      setMessType: (messType: string) => Promise<void>;
+      getLaundryBlock: () => Promise<string | null>;
+      setLaundryBlock: (block: string) => Promise<void>;
+    };
+    updater: {
+      checkForUpdates: () => Promise<{
+        success: boolean;
+        updateInfo?: {
+          version: string;
+          releaseDate: string;
+          releaseName?: string;
+          releaseNotes?: string;
+        };
+        error?: string;
+      }>;
+      downloadUpdate: () => Promise<{
+        success: boolean;
+        error?: string;
+      }>;
+      installUpdate: () => void;
+      onUpdateChecking: (callback: () => void) => void;
+      onUpdateAvailable: (callback: (info: any) => void) => void;
+      onUpdateNotAvailable: (callback: (info: any) => void) => void;
+      onUpdateError: (callback: (error: string) => void) => void;
+      onDownloadProgress: (
+        callback: (progress: {
+          bytesPerSecond: number;
+          percent: number;
+          transferred: number;
+          total: number;
+        }) => void,
+      ) => void;
+      onUpdateDownloaded: (callback: (info: any) => void) => void;
+    };
   }
 }
 

@@ -7,3 +7,9 @@ export interface LaundaryEntry {
   CreatedAt: string;
   UpdatedAt: string;
 }
+
+export interface LaundaryResponse {
+  success: boolean;
+  data?: LaundaryEntry[];
+  error?: string;
+}
