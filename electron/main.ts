@@ -19,6 +19,7 @@ import "./ipc/profile.ipc";
 import "./ipc/grade.ipc";
 import "./ipc/timetable.ipc";
 import "./ipc/marks.ipc";
+import "./ipc/feedback.ipc";
 import "./ipc/curriculum.ipc";
 import "./ipc/contactInfo.ipc";
 import "./ipc/attendanceDetail.ipc";
@@ -28,9 +29,26 @@ import "./ipc/updater.ipc";
 import "./ipc/laundary.ipc";
 import "./ipc/mess.ipc";
 import "./ipc/settings.ipc";
+import "./ipc/network.ipc";
 
 /*******
- * END IPC IMPORTS
+ * NETWORK FUNCTIONS
+ *
+ */
+
+export function checkInternet(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const request = net.request("https://www.google.com");
+
+    request.on("response", () => resolve(true));
+    request.on("error", () => resolve(false));
+
+    request.end();
+  });
+}
+
+/*******
+ * END NETWORK FUNCTIONS
  *
  */
 
@@ -133,6 +151,9 @@ app.whenReady().then(() => {
 
   // Initialize event IPC
 
+  // Initialize updater IPC (handlers are always available, but actual updates only in packaged apps)
+  initUpdaterIPC();
+
   // Auto-updater: check for updates in production (packaged) only
   if (app.isPackaged) {
     // Configure logging
@@ -142,9 +163,6 @@ app.whenReady().then(() => {
     // Configure autoUpdater
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = false;
-
-    // Initialize updater IPC
-    initUpdaterIPC();
 
     // Auto-updater event handlers
     autoUpdater.on("checking-for-update", () => {

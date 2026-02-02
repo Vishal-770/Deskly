@@ -8,6 +8,7 @@ import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/Loader";
 import { ArrowLeft, Download, BookOpen, Search, X } from "lucide-react";
+import { ErrorDisplay } from "@/components/error-display";
 
 /* -------------------- Small Helpers -------------------- */
 
@@ -236,9 +237,11 @@ const CurriculumPage = () => {
 
   if (error) {
     return (
-      <div className="h-full w-full flex items-center justify-center">
-        <p className="text-destructive">{error}</p>
-      </div>
+      <ErrorDisplay
+        title="Failed to Load Curriculum"
+        message={error}
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 
@@ -247,12 +250,14 @@ const CurriculumPage = () => {
       return (
         <div className="h-full w-full flex items-center justify-center">
           <div className="text-center">
-            <p className="text-destructive font-semibold mb-4">
-              {categoryError}
-            </p>
+            <ErrorDisplay
+              title="Failed to Load Category Details"
+              message={categoryError}
+            />
             <Button
               onClick={() => router.push("/dashboard/curriculum")}
               variant="outline"
+              className="mt-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Curriculum

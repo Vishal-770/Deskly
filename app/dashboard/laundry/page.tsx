@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ErrorDisplay } from "@/components/error-display";
 
 const BLOCKS = ["A", "B", "CB", "CG", "D1", "D2", "E"];
 
@@ -23,6 +24,7 @@ const LaundryPage: React.FC = () => {
   const [laundaryLoading, setLaundaryLoading] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<string>("");
   const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
@@ -31,15 +33,16 @@ const LaundryPage: React.FC = () => {
   const fetchLaundary = async (block: string) => {
     setLaundaryLoading(true);
     setLaundaryData(null);
+    setError(null);
     try {
       const result = await window.laundary.getSchedule(block);
       if (result.success) {
         setLaundaryData(result.data || []);
       } else {
-        alert(result.error);
+        setError(result.error || "Failed to fetch laundry schedule");
       }
     } catch {
-      alert("Failed to fetch laundry schedule");
+      setError("Failed to fetch laundry schedule");
     } finally {
       setLaundaryLoading(false);
     }
@@ -97,10 +100,20 @@ const LaundryPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold">Laundry Schedule</h1>
           <p className="text-sm text-muted-foreground">
-            View laundry machine availability per block
+            View laundry Schedule per block
           </p>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-6">
+          <ErrorDisplay
+            title="Failed to Load Laundry Schedule"
+            message={error}
+            onRetry={() => selectedBlock && fetchLaundary(selectedBlock)}
+          />
+        </div>
+      )}
 
       <div className="h-[calc(100%-5rem)]">
         <div className="mb-4">

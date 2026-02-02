@@ -7,6 +7,7 @@ import { Calendar } from "lucide-react";
 // Swiper for horizontal swipe on calendar
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import { ErrorDisplay } from "@/components/error-display";
 
 /* -------------------- Types -------------------- */
 
@@ -192,15 +193,11 @@ export default function AcademicCalendarPage() {
 
   if (error) {
     return (
-      <div className="h-full w-full flex flex-col items-center justify-center bg-background p-6">
-        <div className="text-center space-y-3">
-          <div className="w-12 h-12 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto">
-            <Calendar className="w-6 h-6" />
-          </div>
-          <h2 className="text-xl font-bold text-foreground">Calendar Error</h2>
-          <p className="text-muted-foreground">{error}</p>
-        </div>
-      </div>
+      <ErrorDisplay
+        title="Failed to Load Academic Calendar"
+        message={error}
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

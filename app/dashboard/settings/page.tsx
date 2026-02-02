@@ -32,7 +32,6 @@ const SettingPage = () => {
     currentSemester,
     loading: semesterLoading,
     setSemester,
-    clearSemester,
   } = useSemester();
 
   const [logoutLoading, setLogoutLoading] = useState(false);
@@ -54,6 +53,9 @@ const SettingPage = () => {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
+
+  // App version state
+  const [appVersion, setAppVersion] = useState<string>("Loading...");
 
   /* ---------------- EFFECTS ---------------- */
 
@@ -104,6 +106,20 @@ const SettingPage = () => {
         setUpdateInfo(info);
       });
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        const version = await window.system.version();
+        setAppVersion(version);
+      } catch (error) {
+        console.error("Failed to fetch app version:", error);
+        setAppVersion("Unknown");
+      }
+    };
+
+    fetchVersion();
   }, []);
 
   /* ---------------- ACTIONS ---------------- */
@@ -374,7 +390,7 @@ const SettingPage = () => {
             <h2 className="text-lg font-medium">App Updates</h2>
             <div className="space-y-5 text-sm">
               <Row label="Current Version">
-                <span className="text-muted-foreground">v1.1.1</span>
+                <span className="text-muted-foreground">v{appVersion}</span>
               </Row>
 
               <Row label="Update Status">

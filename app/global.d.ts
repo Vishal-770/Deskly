@@ -1,4 +1,5 @@
 import { SystemStats, CGPAData } from "@/types/electron/system.types";
+import type { UpdateInfo } from "builder-util-runtime";
 import {
   Course,
   CoursesResponse,
@@ -13,8 +14,7 @@ import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { Category } from "@/types/electron/curriculum.types";
 import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
-import { LaundaryEntry } from "@/types/electron/Laundary.types";
-import { MessMenuResponse, MessType } from "@/types/renderer/Mess.types";
+import { FeedbackStatus } from "@/lib/electron/parsers/ParseFeedbackInfo";
 
 declare global {
   interface Window {
@@ -142,6 +142,13 @@ declare global {
         error?: string;
       }>;
     };
+    feedback: {
+      getStatus: () => Promise<{
+        success: boolean;
+        data?: FeedbackStatus[];
+        error?: string;
+      }>;
+    };
     attendance: {
       get: () => Promise<{
         success: boolean;
@@ -151,6 +158,7 @@ declare global {
     };
     system: {
       stats: () => Promise<SystemStats>;
+      version: () => Promise<string>;
       onCpuUpdate: (cb: (cpu: number) => void) => void;
     };
     auth: {
@@ -202,12 +210,7 @@ declare global {
     updater: {
       checkForUpdates: () => Promise<{
         success: boolean;
-        updateInfo?: {
-          version: string;
-          releaseDate: string;
-          releaseName?: string;
-          releaseNotes?: string;
-        };
+        updateInfo?: UpdateInfo;
         error?: string;
       }>;
       downloadUpdate: () => Promise<{
@@ -216,8 +219,8 @@ declare global {
       }>;
       installUpdate: () => void;
       onUpdateChecking: (callback: () => void) => void;
-      onUpdateAvailable: (callback: (info: any) => void) => void;
-      onUpdateNotAvailable: (callback: (info: any) => void) => void;
+      onUpdateAvailable: (callback: (info: UpdateInfo) => void) => void;
+      onUpdateNotAvailable: (callback: (info: UpdateInfo) => void) => void;
       onUpdateError: (callback: (error: string) => void) => void;
       onDownloadProgress: (
         callback: (progress: {
@@ -227,7 +230,10 @@ declare global {
           total: number;
         }) => void,
       ) => void;
-      onUpdateDownloaded: (callback: (info: any) => void) => void;
+      onUpdateDownloaded: (callback: (info: UpdateInfo) => void) => void;
+    };
+    network: {
+      checkInternet: () => Promise<boolean>;
     };
   }
 }

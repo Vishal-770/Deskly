@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { Search, ChevronDown } from "lucide-react";
 import Loader from "@/components/Loader";
+import { ErrorDisplay } from "@/components/error-display";
 
 /* -------------------- Helper Components -------------------- */
 
@@ -70,11 +71,11 @@ export default function GradePage() {
 
   if (error || !gradeData) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-sm text-destructive">
-          {error || "No data available"}
-        </p>
-      </div>
+      <ErrorDisplay
+        title="Failed to Load Grades"
+        message={error || "No data available"}
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

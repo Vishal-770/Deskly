@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Course } from "../../types/renderer/Course.types";
 import { CGPAData } from "../../types/electron/system.types";
 import { WeeklySchedule } from "../../types/electron/TimeTable.types";
+import { FeedbackStatus } from "../../lib/electron/parsers/ParseFeedbackInfo";
 
 import {
   BarChart,
@@ -57,6 +58,7 @@ export default function Dashboard() {
   const [timetable, setTimetable] = useState<WeeklySchedule | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [feedbackStatus, setFeedbackStatus] = useState<FeedbackStatus[]>([]);
 
   /* -------------------- Chart Data -------------------- */
 
@@ -131,6 +133,7 @@ export default function Dashboard() {
         const content = await window.content.fetch();
         const cgpa = await window.content.cgpa();
         const timetableResult = await window.timetable.currentSemester();
+        const feedbackResult = await window.feedback.getStatus();
 
         if (cancelled) return;
 
@@ -147,6 +150,10 @@ export default function Dashboard() {
 
         if (timetableResult?.success && timetableResult.data) {
           setTimetable(timetableResult.data);
+        }
+
+        if (feedbackResult?.success && feedbackResult.data) {
+          setFeedbackStatus(feedbackResult.data);
         }
       } catch (e) {
         console.error(e);
@@ -295,6 +302,53 @@ export default function Dashboard() {
           ))}
         </div>
       </section>
+
+      <Divider />
+
+      {/* Feedback Status Section */}
+      {feedbackStatus.length > 0 && (
+        <section className="space-y-6">
+          <h2 className="text-2xl font-semibold">Feedback Status</h2>
+
+          <div className="space-y-4">
+            {feedbackStatus.map((feedback, index) => (
+              <div key={index} className="space-y-3">
+                <h3 className="font-medium text-lg">{feedback.type}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Mid Semester</span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        feedback.midSemester.includes("NOT Given")
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {feedback.midSemester.includes("NOT Given")
+                        ? "Not Submitted"
+                        : "Submitted"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">TEE Semester</span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        feedback.teeSemester.includes("NOT Given")
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {feedback.teeSemester.includes("NOT Given")
+                        ? "Not Submitted"
+                        : "Submitted"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <Divider />
 

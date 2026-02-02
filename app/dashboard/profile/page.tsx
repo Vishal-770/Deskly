@@ -15,6 +15,7 @@ import {
   Award,
   Code2,
 } from "lucide-react";
+import { ErrorDisplay } from "@/components/error-display";
 
 /* -------------------- Info Display Component -------------------- */
 
@@ -45,7 +46,7 @@ const InfoCard = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <div className="bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-border/20">
+  <div className="bg-linear-to-br from-card/50 to-card/30 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-border/20">
     <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-6">
       {title}
     </h3>
@@ -146,9 +147,11 @@ const ProfilePage = () => {
 
   if (error) {
     return (
-      <div className="h-full w-full flex items-center justify-center">
-        <p className="text-destructive font-medium">{error}</p>
-      </div>
+      <ErrorDisplay
+        title="Failed to Load Profile"
+        message={error}
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

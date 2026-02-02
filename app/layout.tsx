@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import TitleBar from "@/components/TitleBar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ConnectivityProvider } from "@/components/connectivity-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,9 +36,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TitleBar />
-
-          {children}
+          <ConnectivityProvider>
+            <TitleBar />
+            {children}
+          </ConnectivityProvider>
         </ThemeProvider>
       </body>
     </html>

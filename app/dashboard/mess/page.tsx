@@ -22,6 +22,7 @@ import {
   Moon,
   Croissant,
 } from "lucide-react";
+import { ErrorDisplay } from "@/components/error-display";
 
 const messOptions: { value: MessType; label: string }[] = [
   { value: "Veg-mens", label: "Veg - Mens" },
@@ -128,7 +129,13 @@ export default function MessPage() {
       <div className="flex-1 overflow-y-auto">
         {loading && <Loader />}
         {error && (
-          <div className="px-8 py-6 text-center text-red-600">{error}</div>
+          <div className="px-8 py-6">
+            <ErrorDisplay
+              title="Failed to Load Mess Menu"
+              message={error}
+              onRetry={() => fetchMenu(selectedMess)}
+            />
+          </div>
         )}
         {!loading && !error && menuData.length > 0 && (
           <div className="px-8 py-6">

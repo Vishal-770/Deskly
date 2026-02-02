@@ -1,4 +1,4 @@
-import { ipcMain, dialog } from "electron";
+import { ipcMain, dialog, app } from "electron";
 import { autoUpdater } from "electron-updater";
 import log from "electron-log";
 import type { UpdateInfo } from "builder-util-runtime";
@@ -17,6 +17,12 @@ interface DownloadResult {
 export function initUpdaterIPC() {
   // Check for updates
   ipcMain.handle("updater:check", async (): Promise<UpdateCheckResult> => {
+    if (!app.isPackaged) {
+      return {
+        success: false,
+        error: "Updates are only available in packaged builds",
+      };
+    }
     try {
       const result = await autoUpdater.checkForUpdates();
       if (!result) {
@@ -34,6 +40,12 @@ export function initUpdaterIPC() {
 
   // Download and install update
   ipcMain.handle("updater:download", async (): Promise<DownloadResult> => {
+    if (!app.isPackaged) {
+      return {
+        success: false,
+        error: "Updates are only available in packaged builds",
+      };
+    }
     try {
       await autoUpdater.downloadUpdate();
       return { success: true };
@@ -48,6 +60,9 @@ export function initUpdaterIPC() {
 
   // Quit and install
   ipcMain.handle("updater:install", () => {
+    if (!app.isPackaged) {
+      return;
+    }
     autoUpdater.quitAndInstall();
   });
 }

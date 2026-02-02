@@ -18,6 +18,7 @@ import { cn } from "../../../lib/utils";
 import { CoursesResponse } from "../../../types/renderer/Course.types";
 import { CourseDetails } from "../../../types/electron/Course.types";
 import Loader from "@/components/Loader";
+import { ErrorDisplay } from "@/components/error-display";
 
 function StatCard({
   label,
@@ -263,12 +264,11 @@ export default function CoursesPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-          <h1 className="mb-2 text-xl font-semibold text-destructive">Error</h1>
-          <p className="text-sm text-muted-foreground">{error}</p>
-        </div>
-      </div>
+      <ErrorDisplay
+        title="Failed to Load Courses"
+        message={error}
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

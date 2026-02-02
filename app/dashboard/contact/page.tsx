@@ -6,6 +6,7 @@ import Loader from "@/components/Loader";
 import { Button } from "@/components/ui/button";
 import { Check, Copy, Mail, Search, X } from "lucide-react";
 import { ContactDetail } from "@/types/renderer/contactInfo.types";
+import { ErrorDisplay } from "@/components/error-display";
 
 const ContactPage = () => {
   const { authState, loading } = useAuth();
@@ -124,10 +125,12 @@ const ContactPage = () => {
       <div className="flex-1 px-8 py-10">
         <div className="max-w-6xl mx-auto w-full">
           {error && (
-            <div className="mb-8 p-4 border-l-4 border-red-500 bg-red-50 dark:bg-red-950 rounded">
-              <p className="text-red-600 dark:text-red-300 font-medium">
-                {error}
-              </p>
+            <div className="mb-8">
+              <ErrorDisplay
+                title="Failed to Load Contact Info"
+                message={error}
+                onRetry={fetchContactInfo}
+              />
             </div>
           )}
 

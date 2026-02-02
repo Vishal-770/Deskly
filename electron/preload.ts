@@ -12,6 +12,7 @@ import { AttendanceRecord as DetailRecord } from "@/lib/electron/parsers/ParseAt
 import { contextBridge, ipcRenderer } from "electron";
 import type { UpdateInfo } from "builder-util-runtime";
 import { LaundaryEntry } from "@/types/electron/Laundary.types";
+import { FeedbackStatus } from "@/lib/electron/parsers/ParseFeedbackInfo";
 import {
   MessMenuResponse,
   MessType,
@@ -203,8 +204,17 @@ contextBridge.exposeInMainWorld("marks", {
   }> => ipcRenderer.invoke("marks:getStudentMarkView", semesterSubId),
 });
 
+contextBridge.exposeInMainWorld("feedback", {
+  getStatus: (): Promise<{
+    success: boolean;
+    data?: FeedbackStatus[];
+    error?: string;
+  }> => ipcRenderer.invoke("feedback:getStatus"),
+});
+
 contextBridge.exposeInMainWorld("system", {
   stats: (): Promise<SystemStats> => ipcRenderer.invoke("system:stats"),
+  version: (): Promise<string> => ipcRenderer.invoke("system:version"),
 
   onCpuUpdate: (callback: (cpu: number) => void) => {
     ipcRenderer.on("cpu:update", (_, cpu) => callback(cpu));
@@ -316,4 +326,8 @@ contextBridge.exposeInMainWorld("settings", {
   getAll: (): Promise<UserSettings> => ipcRenderer.invoke("settings:getAll"),
   clearAll: (): Promise<{ success: boolean }> =>
     ipcRenderer.invoke("settings:clearAll"),
+});
+
+contextBridge.exposeInMainWorld("network", {
+  checkInternet: (): Promise<boolean> => ipcRenderer.invoke("check-internet"),
 });

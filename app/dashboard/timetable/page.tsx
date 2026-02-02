@@ -6,6 +6,7 @@ import { WeeklyScheduleResponse } from "../../../types/renderer/Course.types";
 import { WeeklySchedule } from "../../../types/electron/TimeTable.types";
 import { cn } from "@/lib/renderer/utils";
 import Loader from "@/components/Loader";
+import { ErrorDisplay } from "@/components/error-display";
 
 // Types based on the original file
 interface Session {
@@ -161,7 +162,14 @@ export default function TimetablePage() {
   }, [currentDay]);
 
   if (loading) return <Loader />;
-  if (error) return <ErrorState error={error} />;
+  if (error)
+    return (
+      <ErrorDisplay
+        title="Failed to Load Timetable"
+        message={error}
+        onRetry={() => window.location.reload()}
+      />
+    );
   if (!timetable) return <NoDataState />;
 
   const days = Object.keys(timetable) as (keyof WeeklySchedule)[];

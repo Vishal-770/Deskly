@@ -5,6 +5,7 @@ import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { useSemester } from "@/components/useSemester";
 import { BookOpen, User, Calendar, TrendingUp, Circle } from "lucide-react";
 import Loader from "@/components/Loader";
+import { ErrorDisplay } from "@/components/error-display";
 
 export default function MarksPage() {
   const { currentSemester, loading: semesterLoading } = useSemester();
@@ -46,10 +47,12 @@ export default function MarksPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-center">
-        <BookOpen className="w-10 h-10 mx-auto mb-4 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">{error}</p>
-      </div>
+      <ErrorDisplay
+        title="Failed to load marks"
+        message={error}
+        onRetry={() => window.location.reload()}
+        retryLabel="Reload Page"
+      />
     );
   }
 
