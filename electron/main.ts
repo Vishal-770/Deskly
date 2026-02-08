@@ -166,7 +166,6 @@ app.whenReady().then(() => {
 
     // Auto-updater event handlers
     autoUpdater.on("checking-for-update", () => {
-      console.log("Checking for update...");
       // Send to renderer if window exists
       if (mainWindow) {
         mainWindow.webContents.send("updater:checking");
@@ -174,14 +173,12 @@ app.whenReady().then(() => {
     });
 
     autoUpdater.on("update-available", (info) => {
-      console.log("Update available:", info.version);
       if (mainWindow) {
         mainWindow.webContents.send("updater:available", info);
       }
     });
 
     autoUpdater.on("update-not-available", (info) => {
-      console.log("Update not available");
       if (mainWindow) {
         mainWindow.webContents.send("updater:not-available");
       }
@@ -201,7 +198,6 @@ app.whenReady().then(() => {
     });
 
     autoUpdater.on("update-downloaded", (info) => {
-      console.log("Update downloaded:", info.version);
       if (mainWindow) {
         mainWindow.webContents.send("updater:downloaded", info);
 

@@ -43,12 +43,8 @@ export async function getMessMenu(
 ): Promise<{ success: boolean; data?: MessMenuItem[]; error?: string }> {
   try {
     const url = BASE_URL + messData[mess];
-    console.log(`[Mess Service] Fetching menu for ${mess} from URL: ${url}`);
 
     const response = await fetch(url);
-    console.log(
-      `[Mess Service] Response status: ${response.status} ${response.statusText}`,
-    );
 
     if (!response.ok) {
       console.error(
@@ -58,10 +54,6 @@ export async function getMessMenu(
     }
 
     const jsonData = (await response.json()) as MessMenuResponse;
-    console.log(
-      `[Mess Service] Successfully fetched data. Items count: ${jsonData.list?.length || 0}`,
-    );
-    console.log("Fetched JSON Data:", jsonData);
 
     return {
       success: true,

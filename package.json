@@ -1,6 +1,6 @@
 {
   "name": "deskly",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Deskly - Your Desktop Companion",
   "author": "Deskly Team",
   "private": true,
@@ -13,6 +13,9 @@
     "build:electron": "tsc -p electron/tsconfig.json",
     "build:app": "npm run build:electron && npm run build && electron-builder",
     "build:win": "npm run build:electron && npm run build && electron-builder --win",
+    "build:mac": "npm run build:electron && npm run build && electron-builder --mac",
+    "build:linux": "npm run build:electron && npm run build && electron-builder --linux",
+    "build:all": "npm run build:electron && npm run build && electron-builder --win --mac --linux",
     "start": "next start",
     "lint": "eslint"
   },
@@ -93,6 +96,19 @@
     "win": {
       "target": [
         "nsis"
+      ],
+      "icon": "public/app-logo.png"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "public/app-logo.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
       ],
       "icon": "public/app-logo.png"
     },

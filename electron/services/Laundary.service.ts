@@ -43,6 +43,5 @@ export async function fetchLaundarySchedule(
     (await response.json()) as LaundaryResponse;
   const entries: LaundaryEntry[] = jsonData.list;
 
-  console.log(`Fetched laundry schedule for block ${block}:`, entries);
   return entries;
 }

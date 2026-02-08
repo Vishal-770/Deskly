@@ -13,7 +13,6 @@ ipcMain.handle("curriculum:get", async () => {
 ipcMain.handle("curriculum:getCategoryView", async (event, args) => {
   const { categoryId } = args;
   const result = await getCurriculumCategoryView(categoryId);
-  console.log("IPC result for category view:", result);
   return result;
 });
 

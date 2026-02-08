@@ -20,8 +20,6 @@ import {
 } from "@/types/electron/Mess.types";
 import { UserSettings } from "@/electron/services/Settings.service";
 
-console.log("Preload script loaded");
-
 // Updater types
 interface ProgressInfo {
   total: number;
