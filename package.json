@@ -1,6 +1,6 @@
 {
   "name": "deskly",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "Deskly - Your Desktop Companion",
   "author": "Deskly Team",
   "private": true,
@@ -139,8 +139,7 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "compression": "maximum"
+      "createStartMenuShortcut": true
     },
     "publish": [
       {
