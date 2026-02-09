@@ -1,6 +1,6 @@
 {
   "name": "deskly",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Deskly - Your Desktop Companion",
   "author": "Deskly Team",
   "private": true,
@@ -9,7 +9,7 @@
     "dev:next": "next dev",
     "dev:electron": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
     "dev": "concurrently -k \"npm run dev:next\" \"npm run dev:electron\"",
-    "build": "next build",
+    "build": "next build --webpack",
     "build:electron": "tsc -p electron/tsconfig.json",
     "build:app": "npm run build:electron && npm run build && electron-builder",
     "build:win": "npm run build:electron && npm run build && electron-builder --win",
@@ -79,12 +79,35 @@
     "productName": "Deskly",
     "artifactName": "${productName}-Setup-${version}.${ext}",
     "compression": "maximum",
+    "asar": {
+      "smartUnpack": true
+    },
     "files": [
       "dist-electron/**/*",
       "out/**/*",
+      "!out/**/*.map",
       "package.json",
-      "node_modules/**/*",
-      "assets/**/*"
+      "!node_modules/**/*",
+      "node_modules/electron*/**/*",
+      "node_modules/@radix-ui/**",
+      "node_modules/lucide-react/**",
+      "node_modules/date-fns/**",
+      "node_modules/class-variance-authority/**",
+      "node_modules/clsx/**",
+      "node_modules/tailwind-merge/**",
+      "node_modules/next-themes/**",
+      "node_modules/systeminformation/**",
+      "node_modules/electron-log/**",
+      "node_modules/electron-updater/**",
+      "node_modules/keytar/**",
+      "node_modules/papaparse/**",
+      "node_modules/canvas/**",
+      "node_modules/cheerio/**",
+      "node_modules/little-date/**",
+      "node_modules/recharts/**",
+      "node_modules/swiper/**",
+      "node_modules/tw-animate-css/**",
+      "!node_modules/fuse.js/**"
     ],
     "asarUnpack": [
       "out/**/*"
@@ -116,7 +139,8 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "compression": "maximum"
     },
     "publish": [
       {
@@ -128,6 +152,7 @@
     "extraMetadata": {
       "main": "dist-electron/electron/main.js"
     },
-    "npmRebuild": false
+    "npmRebuild": false,
+    "beforeBuild": "npm prune --production"
   }
 }

@@ -3,6 +3,12 @@ import * as path from "path";
 
 const isDev = process.env.NODE_ENV === "development";
 
+// Disable unused Chromium features for smaller bundle size
+app.commandLine.appendSwitch(
+  "disable-features",
+  "TranslateUI,BlinkGenPropertyTrees",
+);
+
 export let mainWindow: BrowserWindow | null = null;
 
 export function createWindow() {
