@@ -1,4 +1,4 @@
-import { LaundaryEntry } from "../../types/electron/Laundary.types";
+import { LaundaryEntry } from "@/types/electron/Laundary.types";
 const BASE_URL = "https://kanishka-developer.github.io/unmessify/json/en/";
 
 const blockName = {

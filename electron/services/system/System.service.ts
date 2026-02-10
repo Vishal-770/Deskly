@@ -1,5 +1,5 @@
 import si from "systeminformation";
-import type { SystemStats } from "../../types/electron/system.types";
+import type { SystemStats } from "@/types/electron/system.types";
 
 export async function getSystemStats(): Promise<SystemStats> {
   const cpu = await si.currentLoad();
@@ -9,7 +9,7 @@ export async function getSystemStats(): Promise<SystemStats> {
     cpu: cpu.currentLoad,
     memory: {
       used: mem.used,
-      total: mem.total
-    }
+      total: mem.total,
+    },
   };
 }

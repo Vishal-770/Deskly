@@ -1,8 +1,8 @@
-import VTOPClient from "../../lib/electron/axios.client";
-import { handleAuthErrorAndRetry } from "./errorHandler";
-import { extractCGPAFromHTML } from "../../lib/electron/ParseDashboarCgpa";
-import { extractAttendanceFromHTML } from "../../lib/electron/ParseDashboardAttendance";
-import { getAuthTokens } from "./storeAuth.service";
+import VTOPClient from "@/lib/electron/AxiosClient";
+import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
+import { extractCGPAFromHTML } from "@/lib/electron/ParseDashboardCgpa";
+import { extractAttendanceFromHTML } from "@/lib/electron/ParseDashboardAttendance";
+import { getAuthTokens } from "../auth/StoreAuth.service";
 
 export interface CourseAttendance {
   index: number;

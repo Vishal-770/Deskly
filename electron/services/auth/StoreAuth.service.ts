@@ -1,6 +1,6 @@
 import Store from "electron-store";
 import keytar from "keytar";
-import { loginService } from "./login.service";
+import { loginService } from "./Login.service";
 import { Semester } from "@/types/electron/Semster.types";
 
 const SERVICE = "Deskly";

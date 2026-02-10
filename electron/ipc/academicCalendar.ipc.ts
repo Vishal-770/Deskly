@@ -2,7 +2,7 @@ import { ipcMain } from "electron";
 import {
   getAcademicCalendarService,
   getCalendarViewService,
-} from "../services/AcademicCallender.service";
+} from "../services/academic/AcademicCalendar.service";
 
 ipcMain.handle("academicCalendar:get", async () => {
   const result = await getAcademicCalendarService();

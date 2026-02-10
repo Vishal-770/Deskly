@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { fetchLaundarySchedule } from "../services/Laundary.service";
+import { fetchLaundarySchedule } from "../services/facilities/Laundry.service";
 
 ipcMain.handle("laundary:getSchedule", async (event, block: string) => {
   try {

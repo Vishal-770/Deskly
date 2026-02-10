@@ -11,8 +11,8 @@ import {
   setSemesterInfo,
   getSemesterInfo,
   clearSemesterInfo,
-} from "../services/storeAuth.service";
-import { getSemesters } from "../services/timetable.service";
+} from "../services/auth/StoreAuth.service";
+import { getSemesters } from "../services/academic/Timetable.service";
 import { ipcMain } from "electron";
 
 ipcMain.handle("auth:login", (event, data: LoginPayload) => loginUser(data));

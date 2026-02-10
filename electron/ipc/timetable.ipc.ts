@@ -2,8 +2,8 @@ import {
   getCurrentSemesterCourses,
   getCurrentSemesterTimeTable,
   getSemesters,
-} from "../services/timetable.service";
-import { getCurrentSemesterAttendance } from "../services/Attendance.service";
+} from "../services/academic/Timetable.service";
+import { getCurrentSemesterAttendance } from "../services/attendance/Attendance.service";
 import { ipcMain } from "electron";
 
 ipcMain.handle("timetable:get", () => getSemesters());

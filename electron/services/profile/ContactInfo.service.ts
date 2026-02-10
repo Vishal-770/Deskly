@@ -1,8 +1,11 @@
-import VTOPClient from "../../lib/electron/axios.client";
-import { getAuthTokens } from "./storeAuth.service";
-import { parseContactDetails } from "../../lib/electron/parsers/contactInfo.parser";
+import VTOPClient from "@/lib/electron/AxiosClient";
+import { getAuthTokens } from "../auth/StoreAuth.service";
+import { parseContactDetails } from "@/lib/electron/parsers/ContactInfo.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
-import { handleAuthErrorAndRetry, AuthTokens } from "./errorHandler";
+import {
+  handleAuthErrorAndRetry,
+  AuthTokens,
+} from "../system/ErrorHandler.service";
 
 export async function getContactInfo(
   tokens?: AuthTokens,

@@ -1,6 +1,9 @@
-import VTOPClient from "../../lib/electron/axios.client";
-import { getAuthTokens } from "../services/storeAuth.service";
-import { handleAuthErrorAndRetry, AuthTokens } from "./errorHandler";
+import VTOPClient from "@/lib/electron/AxiosClient";
+import { getAuthTokens } from "../auth/StoreAuth.service";
+import {
+  handleAuthErrorAndRetry,
+  AuthTokens,
+} from "../system/ErrorHandler.service";
 
 export async function getUserImage(tokens?: AuthTokens): Promise<{
   success: boolean;

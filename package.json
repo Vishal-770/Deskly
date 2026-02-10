@@ -2,11 +2,11 @@
   "name": "deskly",
   "version": "1.2.0",
   "description": "Deskly - Your Desktop Companion",
-  "author": "Deskly Team",
+  "author": "Deskly Team <deskly@example.com>",
   "private": true,
   "main": "dist-electron/electron/main.js",
   "scripts": {
-    "dev:next": "next dev",
+    "dev:next": "next dev --webpack",
     "dev:electron": "wait-on http://localhost:3000 && cross-env NODE_ENV=development electron .",
     "dev": "concurrently -k \"npm run dev:next\" \"npm run dev:electron\"",
     "build": "next build --webpack",
@@ -87,27 +87,12 @@
       "out/**/*",
       "!out/**/*.map",
       "package.json",
-      "!node_modules/**/*",
-      "node_modules/electron*/**/*",
-      "node_modules/@radix-ui/**",
-      "node_modules/lucide-react/**",
-      "node_modules/date-fns/**",
-      "node_modules/class-variance-authority/**",
-      "node_modules/clsx/**",
-      "node_modules/tailwind-merge/**",
-      "node_modules/next-themes/**",
-      "node_modules/systeminformation/**",
-      "node_modules/electron-log/**",
-      "node_modules/electron-updater/**",
-      "node_modules/keytar/**",
-      "node_modules/papaparse/**",
-      "node_modules/canvas/**",
-      "node_modules/cheerio/**",
-      "node_modules/little-date/**",
-      "node_modules/recharts/**",
-      "node_modules/swiper/**",
-      "node_modules/tw-animate-css/**",
-      "!node_modules/fuse.js/**"
+      "node_modules/**/*",
+      "!node_modules/**/test/**",
+      "!node_modules/**/tests/**",
+      "!node_modules/**/*.md",
+      "!node_modules/**/.gitignore",
+      "!node_modules/**/.npmignore"
     ],
     "asarUnpack": [
       "out/**/*"
@@ -151,7 +136,6 @@
     "extraMetadata": {
       "main": "dist-electron/electron/main.js"
     },
-    "npmRebuild": false,
-    "beforeBuild": "npm prune --production"
+    "npmRebuild": false
   }
 }

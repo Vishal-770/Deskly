@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getStudentProfile } from "../services/profile.service";
+import { getStudentProfile } from "../services/profile/Profile.service";
 
 ipcMain.handle("profile:get", async (event, args) => {
   const { cookies, authorizedID, csrf } = args;

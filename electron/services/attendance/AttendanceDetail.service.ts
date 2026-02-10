@@ -1,10 +1,10 @@
-import VTOPClient from "../../lib/electron/axios.client";
-import { getAuthTokens } from "./storeAuth.service";
-import { handleAuthErrorAndRetry } from "./errorHandler";
+import VTOPClient from "@/lib/electron/AxiosClient";
+import { getAuthTokens } from "../auth/StoreAuth.service";
+import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
 import {
   parseAttendanceDetails,
   AttendanceRecord,
-} from "../../lib/electron/parsers/ParseAttendacneDetails";
+} from "@/lib/electron/parsers/ParseAttendanceDetails.parser";
 export async function getAttendanceDetail(
   classId: string,
   slotName: string,

@@ -1,12 +1,15 @@
-import VTOPClient from "../../lib/electron/axios.client";
+import VTOPClient from "@/lib/electron/AxiosClient";
 import {
   extractCategories,
   parseCourseTable,
   Category,
   CourseEntry,
-} from "../../lib/electron/parsers/Curriculum.parser";
-import { getAuthTokens } from "./storeAuth.service";
-import { handleAuthErrorAndRetry, AuthTokens } from "./errorHandler";
+} from "@/lib/electron/parsers/Curriculum.parser";
+import { getAuthTokens } from "../auth/StoreAuth.service";
+import {
+  handleAuthErrorAndRetry,
+  AuthTokens,
+} from "../system/ErrorHandler.service";
 
 export interface CurriculumResponse {
   success: boolean;

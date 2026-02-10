@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getAttendanceDetail } from "../services/AttendanceDetail.service";
+import { getAttendanceDetail } from "../services/attendance/AttendanceDetail.service";
 
 ipcMain.handle(
   "get-attendance-detail",

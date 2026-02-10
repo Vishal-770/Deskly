@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { settingsService } from "../services/Settings.service";
+import { settingsService } from "../services/system/Settings.service";
 
 ipcMain.handle("settings:getMessType", async () => {
   return settingsService.getMessType();

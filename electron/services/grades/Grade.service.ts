@@ -1,10 +1,10 @@
-import VTOPClient from "../../lib/electron/axios.client";
-import { getAuthTokens } from "./storeAuth.service";
-import { handleAuthErrorAndRetry } from "./errorHandler";
+import VTOPClient from "@/lib/electron/AxiosClient";
+import { getAuthTokens } from "../auth/StoreAuth.service";
+import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
 import {
   parseStudentHistory,
   StudentHistoryData,
-} from "../../lib/electron/parsers/grade.htmlparser";
+} from "@/lib/electron/parsers/GradeHtmlParser.parser";
 
 export async function getExamGradeView(): Promise<{
   success: boolean;

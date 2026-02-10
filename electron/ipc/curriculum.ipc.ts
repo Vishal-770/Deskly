@@ -4,7 +4,7 @@ import {
   getCurriculum,
   getCurriculumCategoryView,
   downloadCourseSyllabus,
-} from "../services/Curriculum.service";
+} from "../services/academic/Curriculum.service";
 
 ipcMain.handle("curriculum:get", async () => {
   return await getCurriculum();

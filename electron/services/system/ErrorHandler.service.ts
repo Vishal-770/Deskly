@@ -1,5 +1,5 @@
 import axios from "axios";
-import { autoLogin, getAuthTokens } from "./storeAuth.service";
+import { autoLogin, getAuthTokens } from "../auth/StoreAuth.service";
 
 export interface AuthTokens {
   authorizedID: string;

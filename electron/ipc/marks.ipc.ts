@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { getStudentMarkView } from "../services/marks.service";
+import { getStudentMarkView } from "../services/grades/Marks.service";
 
 ipcMain.handle(
   "marks:getStudentMarkView",

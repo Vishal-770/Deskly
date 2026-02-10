@@ -11,11 +11,12 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "../dist-electron",
     "rootDir": "../",
+    "baseUrl": "../",
     "resolveJsonModule": true,
     "paths": {
-      "@/*": ["../*"]
+      "@/*": ["./*"]
     }
   },
-  "include": ["**/*.ts", "../types/**/*.ts"],
+  "include": ["**/*.ts", "../types/**/*.ts", "../lib/**/*.ts"],
   "exclude": ["node_modules"]
 }

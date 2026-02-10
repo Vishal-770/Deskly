@@ -1,14 +1,14 @@
-import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
+import { StudentHistoryData } from "@/lib/electron/parsers/GradeHtmlParser.parser";
 import { Semester } from "@/types/electron/Semster.types";
 import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
 import { CourseDetails } from "@/types/electron/Course.types";
 import { WeeklySchedule } from "@/types/electron/TimeTable.types";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
-import { ImportantProfileData } from "@/lib/electron/parseProfileInfo";
+import { ImportantProfileData } from "@/lib/electron/ParseProfileInfo";
 import { Category } from "@/types/electron/curriculum.types";
 import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
-import { AttendanceRecord as DetailRecord } from "@/lib/electron/parsers/ParseAttendacneDetails";
+import { AttendanceRecord as DetailRecord } from "@/lib/electron/parsers/ParseAttendanceDetails.parser";
 import { contextBridge, ipcRenderer } from "electron";
 import type { UpdateInfo } from "builder-util-runtime";
 import { LaundaryEntry } from "@/types/electron/Laundary.types";
@@ -18,7 +18,7 @@ import {
   MessType,
   MessMenuItem,
 } from "@/types/electron/Mess.types";
-import { UserSettings } from "@/electron/services/Settings.service";
+import { UserSettings } from "@/electron/services/system/Settings.service";
 
 // Updater types
 interface ProgressInfo {
@@ -179,7 +179,7 @@ contextBridge.exposeInMainWorld("academicCalendar", {
     calDate: string,
   ): Promise<{
     success: boolean;
-    data?: import("@/lib/electron/parsers/academicCalender.parser").MonthlySchedule;
+    data?: import("@/lib/electron/parsers/AcademicCalendar.parser").MonthlySchedule;
     error?: string;
   }> => ipcRenderer.invoke("academicCalendar:getView", calDate),
 });

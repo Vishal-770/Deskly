@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 import { app } from "electron";
-import { getSystemStats } from "../services/system.service";
+import { getSystemStats } from "../services/system/System.service";
 
 ipcMain.handle("system:stats", async () => {
   return await getSystemStats();
