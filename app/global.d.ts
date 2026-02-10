@@ -8,7 +8,7 @@ import {
 } from "@/types/renderer/Course.types";
 import { Semester } from "@/types/electron/Semster.types";
 import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
-import { ImportantProfileData } from "@/lib/electron/parseProfileInfo";
+import { ImportantProfileData } from "@/lib/electron/ParseProfileInfo";
 import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { Category } from "@/types/electron/curriculum.types";
@@ -159,6 +159,7 @@ declare global {
     system: {
       stats: () => Promise<SystemStats>;
       version: () => Promise<string>;
+      openExternal: (url: string) => Promise<void>;
       onCpuUpdate: (cb: (cpu: number) => void) => void;
     };
     auth: {

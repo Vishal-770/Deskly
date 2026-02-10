@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/components/useAuth";
-import { ImportantProfileData } from "@/lib/electron/parseProfileInfo";
+import { ImportantProfileData } from "@/lib/electron/ParseProfileInfo";
 import Loader from "@/components/Loader";
 import {
   Mail,
@@ -260,7 +260,7 @@ const ProfilePage = () => {
         {/* Proctor Section */}
         <div className="bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-sm p-8 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 border border-border/20">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-8">
-            Faculty Advisor
+            Proctor
           </h2>
 
           <div className="flex flex-col sm:flex-row gap-8 items-start">

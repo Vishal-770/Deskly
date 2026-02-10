@@ -1,7 +1,7 @@
 import {
   CourseAttendance,
   SemesterAttendance,
-} from "@/electron/services/other/Content.service";
+} from "../../electron/services/other/Content.service";
 import * as cheerio from "cheerio";
 export async function extractAttendanceFromHTML(
   html: string,

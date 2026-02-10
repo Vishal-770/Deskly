@@ -9,7 +9,7 @@ import { Category } from "@/types/electron/curriculum.types";
 import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
 import { AttendanceRecord as DetailRecord } from "@/lib/electron/parsers/ParseAttendanceDetails.parser";
-import { contextBridge, ipcRenderer } from "electron";
+import * as electron from "electron";
 import type { UpdateInfo } from "builder-util-runtime";
 import { LaundaryEntry } from "@/types/electron/Laundary.types";
 import { FeedbackStatus } from "@/lib/electron/parsers/ParseFeedbackInfo";
@@ -18,7 +18,7 @@ import {
   MessType,
   MessMenuItem,
 } from "@/types/electron/Mess.types";
-import { UserSettings } from "@/electron/services/system/Settings.service";
+import { UserSettings } from "./services/system/Settings.service";
 
 // Updater types
 interface ProgressInfo {
@@ -50,23 +50,23 @@ type SystemStats = {
   };
 };
 
-contextBridge.exposeInMainWorld("electron", {
+electron.contextBridge.exposeInMainWorld("electron", {
   windowControls: {
-    minimize: () => ipcRenderer.send("window-minimize"),
-    maximize: () => ipcRenderer.send("window-maximize"),
-    close: () => ipcRenderer.send("window-close"),
+    minimize: () => electron.ipcRenderer.send("window-minimize"),
+    maximize: () => electron.ipcRenderer.send("window-maximize"),
+    close: () => electron.ipcRenderer.send("window-close"),
   },
 });
 
-contextBridge.exposeInMainWorld("attendance", {
+electron.contextBridge.exposeInMainWorld("attendance", {
   get: (): Promise<{
     success: boolean;
     data?: AttendanceRecord[];
     error?: string;
-  }> => ipcRenderer.invoke("timetable:attendance"),
+  }> => electron.ipcRenderer.invoke("timetable:attendance"),
 });
 
-contextBridge.exposeInMainWorld("attendanceDetail", {
+electron.contextBridge.exposeInMainWorld("attendanceDetail", {
   get: (
     classId: string,
     slotName: string,
@@ -74,10 +74,10 @@ contextBridge.exposeInMainWorld("attendanceDetail", {
     success: boolean;
     data?: DetailRecord[];
     error?: string;
-  }> => ipcRenderer.invoke("get-attendance-detail", classId, slotName),
+  }> => electron.ipcRenderer.invoke("get-attendance-detail", classId, slotName),
 });
 
-contextBridge.exposeInMainWorld("login", {
+electron.contextBridge.exposeInMainWorld("login", {
   authenticate: (body: {
     username: string;
     password: string;
@@ -88,7 +88,7 @@ contextBridge.exposeInMainWorld("login", {
     cookies?: string;
     csrf?: string;
     authorizedID?: string;
-  }> => ipcRenderer.invoke("login:authenticate", body),
+  }> => electron.ipcRenderer.invoke("login:authenticate", body),
   logout: (body: {
     cookies: string;
     authorizedID: string;
@@ -96,10 +96,10 @@ contextBridge.exposeInMainWorld("login", {
   }): Promise<{
     success: boolean;
     error?: string;
-  }> => ipcRenderer.invoke("logout:perform", body),
+  }> => electron.ipcRenderer.invoke("logout:perform", body),
 });
 
-contextBridge.exposeInMainWorld("content", {
+electron.contextBridge.exposeInMainWorld("content", {
   fetch: (): Promise<{
     success: boolean;
     courses?: Array<{
@@ -112,22 +112,22 @@ contextBridge.exposeInMainWorld("content", {
     }>;
     semester?: string;
     error?: string;
-  }> => ipcRenderer.invoke("content:fetch"),
+  }> => electron.ipcRenderer.invoke("content:fetch"),
 
   cgpa: (): Promise<{
     success: boolean;
     cgpaData?: CGPAData;
     error?: string;
-  }> => ipcRenderer.invoke("content:cgpa"),
+  }> => electron.ipcRenderer.invoke("content:cgpa"),
   image: (): Promise<{
     success: boolean;
     image?: string;
     contentType?: string;
     error?: string;
-  }> => ipcRenderer.invoke("userImage:fetch"),
+  }> => electron.ipcRenderer.invoke("userImage:fetch"),
 });
 
-contextBridge.exposeInMainWorld("profile", {
+electron.contextBridge.exposeInMainWorld("profile", {
   get: (
     cookies: string,
     authorizedID: string,
@@ -137,16 +137,17 @@ contextBridge.exposeInMainWorld("profile", {
     data?: ImportantProfileData;
     html?: string;
     error?: string;
-  }> => ipcRenderer.invoke("profile:get", { cookies, authorizedID, csrf }),
+  }> =>
+    electron.ipcRenderer.invoke("profile:get", { cookies, authorizedID, csrf }),
 });
 
-contextBridge.exposeInMainWorld("curriculum", {
+electron.contextBridge.exposeInMainWorld("curriculum", {
   get: (): Promise<{
     success: boolean;
     data?: Category[];
     html?: string;
     error?: string;
-  }> => ipcRenderer.invoke("curriculum:get"),
+  }> => electron.ipcRenderer.invoke("curriculum:get"),
   getCategoryView: (
     categoryId: string,
   ): Promise<{
@@ -154,178 +155,194 @@ contextBridge.exposeInMainWorld("curriculum", {
     data?: CourseEntry[];
     html?: string;
     error?: string;
-  }> => ipcRenderer.invoke("curriculum:getCategoryView", { categoryId }),
+  }> =>
+    electron.ipcRenderer.invoke("curriculum:getCategoryView", { categoryId }),
   downloadSyllabus: (
     courseCode: string,
   ): Promise<{
     success: boolean;
     message?: string;
     error?: string;
-  }> => ipcRenderer.invoke("curriculum:downloadSyllabus", { courseCode }),
+  }> =>
+    electron.ipcRenderer.invoke("curriculum:downloadSyllabus", { courseCode }),
 });
 
-contextBridge.exposeInMainWorld("contactInfo", {
+electron.contextBridge.exposeInMainWorld("contactInfo", {
   get: (): Promise<ContactInfoResponse> =>
-    ipcRenderer.invoke("contactInfo:get"),
+    electron.ipcRenderer.invoke("contactInfo:get"),
 });
 
-contextBridge.exposeInMainWorld("academicCalendar", {
+electron.contextBridge.exposeInMainWorld("academicCalendar", {
   get: (): Promise<{
     success: boolean;
     data?: { label: string; dateValue: string }[];
     error?: string;
-  }> => ipcRenderer.invoke("academicCalendar:get"),
+  }> => electron.ipcRenderer.invoke("academicCalendar:get"),
   getView: (
     calDate: string,
   ): Promise<{
     success: boolean;
     data?: import("@/lib/electron/parsers/AcademicCalendar.parser").MonthlySchedule;
     error?: string;
-  }> => ipcRenderer.invoke("academicCalendar:getView", calDate),
+  }> => electron.ipcRenderer.invoke("academicCalendar:getView", calDate),
 });
 
-contextBridge.exposeInMainWorld("grade", {
+electron.contextBridge.exposeInMainWorld("grade", {
   getExamGradeView: (): Promise<{
     success: boolean;
     data?: StudentHistoryData;
     error?: string;
-  }> => ipcRenderer.invoke("grade:getExamGradeView"),
+  }> => electron.ipcRenderer.invoke("grade:getExamGradeView"),
 });
 
-contextBridge.exposeInMainWorld("marks", {
+electron.contextBridge.exposeInMainWorld("marks", {
   getStudentMarkView: (
     semesterSubId: string,
   ): Promise<{
     success: boolean;
     data?: StudentMarkEntry[];
     error?: string;
-  }> => ipcRenderer.invoke("marks:getStudentMarkView", semesterSubId),
+  }> => electron.ipcRenderer.invoke("marks:getStudentMarkView", semesterSubId),
 });
 
-contextBridge.exposeInMainWorld("feedback", {
+electron.contextBridge.exposeInMainWorld("feedback", {
   getStatus: (): Promise<{
     success: boolean;
     data?: FeedbackStatus[];
     error?: string;
-  }> => ipcRenderer.invoke("feedback:getStatus"),
+  }> => electron.ipcRenderer.invoke("feedback:getStatus"),
 });
 
-contextBridge.exposeInMainWorld("system", {
-  stats: (): Promise<SystemStats> => ipcRenderer.invoke("system:stats"),
-  version: (): Promise<string> => ipcRenderer.invoke("system:version"),
+electron.contextBridge.exposeInMainWorld("system", {
+  stats: (): Promise<SystemStats> =>
+    electron.ipcRenderer.invoke("system:stats"),
+  version: (): Promise<string> => electron.ipcRenderer.invoke("system:version"),
+  openExternal: (url: string): Promise<void> =>
+    electron.ipcRenderer.invoke("system:open-external", url),
 
   onCpuUpdate: (callback: (cpu: number) => void) => {
-    ipcRenderer.on("cpu:update", (_, cpu) => callback(cpu));
+    electron.ipcRenderer.on("cpu:update", (_, cpu) => callback(cpu));
   },
 });
 
-contextBridge.exposeInMainWorld("auth", {
+electron.contextBridge.exposeInMainWorld("auth", {
   login: (data: { userId: string; password: string }): Promise<boolean> =>
-    ipcRenderer.invoke("auth:login", data),
+    electron.ipcRenderer.invoke("auth:login", data),
   autoLogin: (): Promise<{
     userId: string;
     loggedIn: boolean;
     lastLogin: number;
-  } | null> => ipcRenderer.invoke("auth:autoLogin"),
-  logout: (): Promise<boolean> => ipcRenderer.invoke("auth:logout"),
+  } | null> => electron.ipcRenderer.invoke("auth:autoLogin"),
+  logout: (): Promise<boolean> => electron.ipcRenderer.invoke("auth:logout"),
   get: (): Promise<{
     userId: string;
     loggedIn: boolean;
     lastLogin: number;
-  } | null> => ipcRenderer.invoke("auth:get"),
+  } | null> => electron.ipcRenderer.invoke("auth:get"),
   setTokens: (data: SetAuthTokensPayload): Promise<boolean> =>
-    ipcRenderer.invoke("auth:setTokens", data),
+    electron.ipcRenderer.invoke("auth:setTokens", data),
   getTokens: (): Promise<{
     authorizedID: string;
     csrf: string;
     cookies: string;
-  } | null> => ipcRenderer.invoke("auth:getTokens"),
-  deleteTokens: (): Promise<boolean> => ipcRenderer.invoke("auth:deleteTokens"),
+  } | null> => electron.ipcRenderer.invoke("auth:getTokens"),
+  deleteTokens: (): Promise<boolean> =>
+    electron.ipcRenderer.invoke("auth:deleteTokens"),
   setSemester: (data: Semester): Promise<boolean> =>
-    ipcRenderer.invoke("auth:setSemester", data),
+    electron.ipcRenderer.invoke("auth:setSemester", data),
   getSemester: (): Promise<Semester | null> =>
-    ipcRenderer.invoke("auth:getSemester"),
+    electron.ipcRenderer.invoke("auth:getSemester"),
   clearSemester: (): Promise<boolean> =>
-    ipcRenderer.invoke("auth:clearSemester"),
+    electron.ipcRenderer.invoke("auth:clearSemester"),
   getSemesters: (): Promise<{
     success: boolean;
     semesters?: Semester[];
     error?: string;
-  }> => ipcRenderer.invoke("auth:getSemesters"),
+  }> => electron.ipcRenderer.invoke("auth:getSemesters"),
 });
 
-contextBridge.exposeInMainWorld("timetable", {
+electron.contextBridge.exposeInMainWorld("timetable", {
   courses: (): Promise<{
     success: boolean;
     data?: CourseDetails[];
     error?: string;
-  }> => ipcRenderer.invoke("timetable:courses"),
+  }> => electron.ipcRenderer.invoke("timetable:courses"),
   currentSemester: (): Promise<{
     success: boolean;
     data?: WeeklySchedule;
     error?: string;
-  }> => ipcRenderer.invoke("timetable:currentSemester"),
+  }> => electron.ipcRenderer.invoke("timetable:currentSemester"),
   get: (): Promise<{
     success: boolean;
     semesters?: Semester[];
     error?: string;
-  }> => ipcRenderer.invoke("timetable:get"),
+  }> => electron.ipcRenderer.invoke("timetable:get"),
 });
 
-contextBridge.exposeInMainWorld("updater", {
-  checkForUpdates: () => ipcRenderer.invoke("updater:check"),
-  downloadUpdate: () => ipcRenderer.invoke("updater:download"),
-  installUpdate: () => ipcRenderer.invoke("updater:install"),
+electron.contextBridge.exposeInMainWorld("updater", {
+  checkForUpdates: () => electron.ipcRenderer.invoke("updater:check"),
+  downloadUpdate: () => electron.ipcRenderer.invoke("updater:download"),
+  installUpdate: () => electron.ipcRenderer.invoke("updater:install"),
   onUpdateChecking: (callback: () => void) =>
-    ipcRenderer.on("updater:checking", callback),
+    electron.ipcRenderer.on("updater:checking", callback),
   onUpdateAvailable: (callback: (info: UpdateInfo) => void) =>
-    ipcRenderer.on("updater:available", (_event, info) => callback(info)),
+    electron.ipcRenderer.on("updater:available", (_event, info) =>
+      callback(info),
+    ),
   onUpdateNotAvailable: (callback: (info: UpdateInfo) => void) =>
-    ipcRenderer.on("updater:not-available", (_event, info) => callback(info)),
+    electron.ipcRenderer.on("updater:not-available", (_event, info) =>
+      callback(info),
+    ),
   onUpdateError: (callback: (error: string) => void) =>
-    ipcRenderer.on("updater:error", (_event, error) => callback(error)),
+    electron.ipcRenderer.on("updater:error", (_event, error) =>
+      callback(error),
+    ),
   onDownloadProgress: (callback: (progress: ProgressInfo) => void) =>
-    ipcRenderer.on("updater:progress", (_event, progress) =>
+    electron.ipcRenderer.on("updater:progress", (_event, progress) =>
       callback(progress),
     ),
   onUpdateDownloaded: (callback: (info: UpdateInfo) => void) =>
-    ipcRenderer.on("updater:downloaded", (_event, info) => callback(info)),
+    electron.ipcRenderer.on("updater:downloaded", (_event, info) =>
+      callback(info),
+    ),
 });
 
-contextBridge.exposeInMainWorld("laundary", {
+electron.contextBridge.exposeInMainWorld("laundary", {
   getSchedule: (
     block: string,
   ): Promise<{
     success: boolean;
     data?: LaundaryEntry[];
     error?: string;
-  }> => ipcRenderer.invoke("laundary:getSchedule", block),
+  }> => electron.ipcRenderer.invoke("laundary:getSchedule", block),
 });
 
-contextBridge.exposeInMainWorld("mess", {
+electron.contextBridge.exposeInMainWorld("mess", {
   getMenu: (
     mess: MessType,
   ): Promise<{
     success: boolean;
     data?: MessMenuItem[];
     error?: string;
-  }> => ipcRenderer.invoke("mess:getMenu", mess),
+  }> => electron.ipcRenderer.invoke("mess:getMenu", mess),
 });
 
-contextBridge.exposeInMainWorld("settings", {
+electron.contextBridge.exposeInMainWorld("settings", {
   getMessType: (): Promise<string> =>
-    ipcRenderer.invoke("settings:getMessType"),
+    electron.ipcRenderer.invoke("settings:getMessType"),
   setMessType: (messType: string): Promise<{ success: boolean }> =>
-    ipcRenderer.invoke("settings:setMessType", messType),
+    electron.ipcRenderer.invoke("settings:setMessType", messType),
   getLaundryBlock: (): Promise<string> =>
-    ipcRenderer.invoke("settings:getLaundryBlock"),
+    electron.ipcRenderer.invoke("settings:getLaundryBlock"),
   setLaundryBlock: (block: string): Promise<{ success: boolean }> =>
-    ipcRenderer.invoke("settings:setLaundryBlock", block),
-  getAll: (): Promise<UserSettings> => ipcRenderer.invoke("settings:getAll"),
+    electron.ipcRenderer.invoke("settings:setLaundryBlock", block),
+  getAll: (): Promise<UserSettings> =>
+    electron.ipcRenderer.invoke("settings:getAll"),
   clearAll: (): Promise<{ success: boolean }> =>
-    ipcRenderer.invoke("settings:clearAll"),
+    electron.ipcRenderer.invoke("settings:clearAll"),
 });
 
-contextBridge.exposeInMainWorld("network", {
-  checkInternet: (): Promise<boolean> => ipcRenderer.invoke("check-internet"),
+electron.contextBridge.exposeInMainWorld("network", {
+  checkInternet: (): Promise<boolean> =>
+    electron.ipcRenderer.invoke("check-internet"),
 });

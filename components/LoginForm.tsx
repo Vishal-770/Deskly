@@ -1,13 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User, Key, LogIn, HelpCircle } from "lucide-react";
+import { User, Key, LogIn, HelpCircle, Eye, EyeOff } from "lucide-react";
 
 export const LoginForm: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [version, setVersion] = useState("loading...");
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        const appVersion = await window.system.version();
+        setVersion(`v${appVersion}`);
+      } catch (error) {
+        setVersion("v1.2.0");
+      }
+    };
+    fetchVersion();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,7 +96,7 @@ export const LoginForm: React.FC = () => {
       <div className="w-full max-w-[400px] relative z-10 flex flex-col gap-8">
         <div className="text-center space-y-3">
           <div className="flex justify-center mb-4">
-            <div className="w-14 h-14 bg-card text-foreground flex items-center justify-center border border-input rounded-sm shadow-sm">
+            <div className="w-14 h-14 flex items-center justify-center">
               <img src="/app-logo.png" className="w-8 h-8" alt="Logo" />
             </div>
           </div>
@@ -109,7 +123,7 @@ export const LoginForm: React.FC = () => {
                   id="reg-no"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full h-12 pl-4 pr-10 bg-card border border-input text-base font-medium text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 hover:border-primary/50 transition-all rounded-sm placeholder:uppercase placeholder:tracking-wider peer"
+                  className="block w-full h-12 pl-4 pr-10 bg-card border border-input text-base font-medium text-foreground placeholder-foreground/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 hover:border-primary/50 transition-all rounded-sm placeholder:uppercase placeholder:tracking-wider peer"
                   placeholder="21BCE1001"
                   required
                 />
@@ -128,17 +142,25 @@ export const LoginForm: React.FC = () => {
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full h-12 pl-4 pr-10 bg-card border border-input text-base font-medium text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 hover:border-primary/50 transition-all rounded-sm placeholder:tracking-widest peer"
+                  className="block w-full h-12 pl-4 pr-10 bg-card border border-input text-base font-medium text-foreground placeholder-foreground/60 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 hover:border-primary/50 transition-all rounded-sm placeholder:tracking-widest peer"
                   placeholder="••••••••"
                   required
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground peer-focus:text-primary transition-colors pointer-events-none">
-                  <Key className="w-5 h-5" />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground peer-focus:text-primary transition-colors hover:text-primary"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -162,7 +184,13 @@ export const LoginForm: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] font-semibold border-t border-border pt-5 mt-2">
           <a
             href="#"
-            className="text-muted-foreground hover:text-primary transition-colors uppercase tracking-wide flex items-center gap-1.5"
+            onClick={async (e) => {
+              e.preventDefault();
+              await window.system.openExternal(
+                "https://github.com/Vishal-770/Deskly/issues",
+              );
+            }}
+            className="text-muted-foreground hover:text-primary transition-colors uppercase tracking-wide flex items-center gap-1.5 cursor-pointer"
           >
             <HelpCircle className="w-3.5 h-3.5" />
             Trouble logging in?
@@ -177,7 +205,7 @@ export const LoginForm: React.FC = () => {
       </div>
 
       <div className="absolute bottom-4 right-6 text-[9px] font-mono font-medium text-muted-foreground uppercase tracking-widest">
-        <span>v2.4.0-stable</span>
+        <span>{version}</span>
       </div>
     </>
   );
