@@ -1,4 +1,4 @@
-import { CGPAData } from "@/electron/services/content.service";
+import { CGPAData } from "@/electron/services/other/Content.service";
 import * as cheerio from "cheerio";
 
 export async function extractCGPAFromHTML(html: string): Promise<CGPAData> {
