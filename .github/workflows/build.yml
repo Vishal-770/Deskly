@@ -36,11 +36,12 @@ jobs:
 
       - name: Verify build output
         run: |
-          if [ ! -f "dist-electron/electron/main.js" ]; then
-            echo "Error: dist-electron/electron/main.js not found"
+          if (!(Test-Path "dist-electron/electron/main.js")) {
+            Write-Host "Error: dist-electron/electron/main.js not found"
             exit 1
-          fi
-          echo "Build output verified"
+          }
+          Write-Host "Build output verified"
+        shell: pwsh
 
       - name: Build and publish
         run: npx electron-builder --publish always
