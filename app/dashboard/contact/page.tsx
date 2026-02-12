@@ -135,10 +135,8 @@ const ContactPage = () => {
           )}
 
           {isLoading && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                Loading contact information...
-              </p>
+            <div className="flex items-center justify-center py-8">
+              <Loader />
             </div>
           )}
 

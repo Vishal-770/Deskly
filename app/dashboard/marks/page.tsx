@@ -144,7 +144,11 @@ export default function MarksPage() {
                     .toFixed(2)}
                 </span>
                 <span className="text-muted-foreground text-sm ml-1">
-                  / 100
+                  /{" "}
+                  {activeCourseData.assessments.reduce(
+                    (s, a) => s + a.weightagePercent,
+                    0,
+                  )}
                 </span>
               </div>
             </div>
@@ -178,13 +182,16 @@ export default function MarksPage() {
                         </div>
 
                         <div className="text-right">
-                          <span className="text-lg">
-                            {assessment.scoredMark}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {" "}
-                            / {assessment.maxMark}
-                          </span>
+                          <div className="text-lg">
+                            {assessment.weightageMark.toFixed(1)}
+                            <span className="text-muted-foreground">
+                              {" "}
+                              / {assessment.weightagePercent}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {assessment.scoredMark} / {assessment.maxMark}
+                          </div>
                         </div>
                       </div>
 

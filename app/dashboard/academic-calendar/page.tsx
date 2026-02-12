@@ -107,16 +107,40 @@ export default function AcademicCalendarPage() {
           // );
           if (result.success) {
             setData(result.data || []);
-            // Set first month as active tab if available
+            // Set current month as active tab if available, otherwise first month
             if (result.data && result.data.length > 0) {
-              const firstDate = result.data[0].dateValue;
-              setActiveTab(firstDate);
+              const currentDate = new Date();
+              const currentMonthName = [
+                "JANUARY",
+                "FEBRUARY",
+                "MARCH",
+                "APRIL",
+                "MAY",
+                "JUNE",
+                "JULY",
+                "AUGUST",
+                "SEPTEMBER",
+                "OCTOBER",
+                "NOVEMBER",
+                "DECEMBER",
+              ][currentDate.getMonth()];
+              const currentYear = currentDate.getFullYear();
+              const currentMonthYear = `${currentMonthName} ${currentYear}`;
 
-              // Immediately fetch the view for the first month so it shows on mount
+              // Find current month in data, fallback to first month
+              const currentMonthItem = result.data.find(
+                (item) => item.dateValue === currentMonthYear,
+              );
+              const defaultTab = currentMonthItem
+                ? currentMonthItem.dateValue
+                : result.data[0].dateValue;
+              setActiveTab(defaultTab);
+
+              // Immediately fetch the view for the default month so it shows on mount
               try {
                 if (window.academicCalendar?.getView) {
                   const viewRes =
-                    await window.academicCalendar.getView(firstDate);
+                    await window.academicCalendar.getView(defaultTab);
                   // console.log(
                   //   "Initial calendar view fetch success:",
                   //   viewRes.success,
@@ -124,7 +148,7 @@ export default function AcademicCalendarPage() {
                   if (viewRes.success && viewRes.data) {
                     setCalendarData((prev) => ({
                       ...prev,
-                      [firstDate]: viewRes.data as MonthlySchedule,
+                      [defaultTab]: viewRes.data as MonthlySchedule,
                     }));
                   } else {
                     console.error(

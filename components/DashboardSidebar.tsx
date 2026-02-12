@@ -202,7 +202,7 @@ const DashboardSidebar = () => {
   return (
     <>
       <div
-        className={`fixed left-0 top-8 w-16 h-full bg-card/98 backdrop-blur-sm text-card-foreground py-4 border-r border-border/50 overflow-y-auto hide-scrollbar shadow-lg flex flex-col items-center transition-all duration-300`}
+        className={`fixed left-0 top-8 w-16 h-full bg-card/98 backdrop-blur-sm text-card-foreground py-4 pb-8 border-r border-border/50 overflow-y-auto hide-scrollbar shadow-lg flex flex-col items-center transition-all duration-300`}
       >
         {/* Navigation / Search */}
         <nav className="space-y-2 flex-1 w-full flex flex-col items-center">
@@ -229,20 +229,16 @@ const DashboardSidebar = () => {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group ${pathname === item.href ? "bg-primary/15 text-primary border-l-4 border-primary shadow-sm ring-1 ring-primary/20" : ""}`}
+              className={`relative p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group ${pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href)) ? "bg-primary/15 text-primary border-l-4 border-primary shadow-sm ring-1 ring-primary/20" : ""}`}
             >
               <span className="w-5 h-5 flex items-center justify-center">
                 {item.icon}
               </span>
-              {pathname === item.href && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-card animate-pulse"></div>
-              )}
-              <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 max-w-xs">
-                <div className="text-sm font-medium">{item.label}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {item.description}
-                </div>
-              </div>
+              {pathname === item.href ||
+                (item.href !== "/dashboard" &&
+                  pathname.startsWith(item.href) && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-card animate-pulse"></div>
+                  ))}
             </Link>
           ))}
         </nav>
@@ -271,12 +267,6 @@ const DashboardSidebar = () => {
               {pathname === "/dashboard/profile" && (
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-card animate-pulse"></div>
               )}
-            </div>
-            <div className="absolute left-full ml-2 bottom-0 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 max-w-xs">
-              <div className="text-sm font-medium">Profile</div>
-              <div className="text-xs text-muted-foreground mt-1">
-                View and edit your personal information
-              </div>
             </div>
           </Link>
         )}
