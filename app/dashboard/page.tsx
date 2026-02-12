@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Course } from "../../types/renderer/Course.types";
 import { CGPAData } from "../../types/electron/system.types";
 import { WeeklySchedule } from "../../types/electron/TimeTable.types";
-import { FeedbackStatus } from "../../lib/electron/parsers/ParseFeedbackInfo";
+import { FeedbackStatus } from "../../lib/electron-utils/parsers/ParseFeedbackInfo";
 
 import {
   BarChart,
@@ -433,6 +433,28 @@ export default function Dashboard() {
           </div>
         </section>
       )}
+
+      {/* Test Payment Receipts Button */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">Test Services</h2>
+        <button
+          onClick={async () => {
+            try {
+              console.log("Fetching payment receipts...");
+              const result = await window.paymentReceipts.fetch();
+              console.log("Payment receipts response:", result);
+              if (result.success && result.data) {
+                console.log("Payment receipts data:", result.data);
+              }
+            } catch (error) {
+              console.error("Error fetching payment receipts:", error);
+            }
+          }}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          Test Payment Receipts
+        </button>
+      </section>
     </div>
   );
 }

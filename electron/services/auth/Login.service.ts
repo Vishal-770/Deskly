@@ -1,10 +1,10 @@
 import { LoginRequestBody } from "@/types/electron/Captcha.types";
 
 import { getCaptcha } from "../other/GetCaptcha.service";
-import { solveCaptcha } from "@/lib/electron/SolveCaptcha";
+import { solveCaptcha } from "@/lib/electron-utils/SolveCaptcha";
 import * as cheerio from "cheerio";
 
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 
 export async function loginService(body: LoginRequestBody) {
   try {

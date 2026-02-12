@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/components/useAuth";
-import { ImportantProfileData } from "@/lib/electron/ParseProfileInfo";
+import { ImportantProfileData } from "@/lib/electron-utils/ParseProfileInfo";
 import Loader from "@/components/Loader";
 import {
   Mail,

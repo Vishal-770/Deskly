@@ -30,6 +30,7 @@ import "./ipc/laundary.ipc";
 import "./ipc/mess.ipc";
 import "./ipc/settings.ipc";
 import "./ipc/network.ipc";
+import "./ipc/paymentReceipts.ipc";
 
 /*******
  * NETWORK FUNCTIONS

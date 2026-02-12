@@ -1,9 +1,9 @@
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
 import {
   parseStudentProfile,
   ImportantProfileData,
-} from "@/lib/electron/ParseProfileInfo";
+} from "@/lib/electron-utils/ParseProfileInfo";
 
 type ProfileResponse =
   | { success: true; data: ImportantProfileData; html: string }

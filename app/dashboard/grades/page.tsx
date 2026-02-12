@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { StudentHistoryData } from "../../../lib/electron/parsers/GradeHtmlParser.parser";
+import type { StudentHistoryData } from "@/lib/electron-utils/parsers/GradeHtmlParser.parser";
 import {
   BarChart,
   Bar,

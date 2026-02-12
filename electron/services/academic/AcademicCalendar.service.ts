@@ -1,14 +1,14 @@
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import { getAuthTokens, getSemesterInfo } from "../auth/StoreAuth.service";
 import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
 import {
   parseSemesterMonths,
   SemesterMonth,
-} from "@/lib/electron/parsers/TimeTableMonth.parser";
+} from "@/lib/electron-utils/parsers/TimeTableMonth.parser";
 import {
   parseSimpleAttendance,
   MonthlySchedule,
-} from "@/lib/electron/parsers/AcademicCalendar.parser";
+} from "@/lib/electron-utils/parsers/AcademicCalendar.parser";
 
 type AcademicCalendarResponse =
   | { success: true; data: SemesterMonth[] }

@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/useAuth";
-import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
+import { CourseEntry } from "@/lib/electron-utils/parsers/Curriculum.parser";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/Loader";
 import {

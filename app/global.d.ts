@@ -7,14 +7,15 @@ import {
   AttendanceResponse,
 } from "@/types/renderer/Course.types";
 import { Semester } from "@/types/electron/Semster.types";
-import { StudentHistoryData } from "@/lib/electron/parsers/grade.htmlparser";
-import { ImportantProfileData } from "@/lib/electron/ParseProfileInfo";
-import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
+import { StudentHistoryData } from "@/lib/electron-utils/parsers/GradeHtmlParser.parser";
+import { ImportantProfileData } from "@/lib/electron-utils/ParseProfileInfo";
+import { AttendanceRecord } from "@/lib/electron-utils/parsers/ParseAttendance";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
 import { Category } from "@/types/electron/curriculum.types";
-import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
+import { CourseEntry } from "@/lib/electron-utils/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
-import { FeedbackStatus } from "@/lib/electron/parsers/ParseFeedbackInfo";
+import { FeedbackStatus } from "@/lib/electron-utils/parsers/ParseFeedbackInfo";
+import { Receipt } from "@/lib/electron-utils/parsers/PaymentRecipts.parser";
 
 declare global {
   interface Window {
@@ -146,6 +147,13 @@ declare global {
       getStatus: () => Promise<{
         success: boolean;
         data?: FeedbackStatus[];
+        error?: string;
+      }>;
+    };
+    paymentReceipts: {
+      fetch: () => Promise<{
+        success: boolean;
+        data?: Receipt[];
         error?: string;
       }>;
     };

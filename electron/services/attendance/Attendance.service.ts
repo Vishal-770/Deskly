@@ -1,10 +1,10 @@
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import { getAuthTokens, getSemesterInfo } from "../auth/StoreAuth.service";
 import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
 import {
   parseAttendance,
   AttendanceRecord,
-} from "@/lib/electron/parsers/ParseAttendance";
+} from "@/lib/electron-utils/parsers/ParseAttendance";
 export async function getCurrentSemesterAttendance(): Promise<{
   success: boolean;
   data?: AttendanceRecord[];

@@ -1,5 +1,5 @@
 import { CaptchaResult, CaptchaType } from "@/types/electron/Captcha.types";
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import * as cheerio from "cheerio";
 
 export async function getCaptcha(): Promise<CaptchaResult> {

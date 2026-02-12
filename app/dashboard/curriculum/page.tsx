@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/useAuth";
 import { Category } from "@/types/electron/curriculum.types";
-import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
+import { CourseEntry } from "@/lib/electron-utils/parsers/Curriculum.parser";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/Loader";
 import { ArrowLeft, Download, BookOpen, Search, X } from "lucide-react";

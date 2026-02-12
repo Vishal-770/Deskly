@@ -28,6 +28,7 @@ export function createWindow() {
       nodeIntegration: false,
       webSecurity: true,
       zoomFactor: 1.0,
+      devTools: isDev, // Disable dev tools in production
     },
   });
 
@@ -77,6 +78,13 @@ export function createWindow() {
     (_event, _level, _message, _line, _sourceId) => {},
   );
 
+  // Prevent dev tools from opening in production
+  if (!isDev) {
+    mainWindow.webContents.on("devtools-opened", () => {
+      mainWindow?.webContents.closeDevTools();
+    });
+  }
+
   if (isDev) {
     mainWindow.loadURL("http://localhost:3000");
     mainWindow.webContents.openDevTools();
@@ -119,4 +127,10 @@ export function initWindow() {
   globalShortcut.register("CommandOrControl+numadd", () => {});
   globalShortcut.register("CommandOrControl+numsub", () => {});
   globalShortcut.register("CommandOrControl+num0", () => {});
+
+  // Disable dev tools shortcuts in production
+  if (!isDev) {
+    globalShortcut.register("CommandOrControl+Shift+I", () => {});
+    globalShortcut.register("F12", () => {});
+  }
 }

@@ -1,10 +1,10 @@
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import {
   extractCategories,
   parseCourseTable,
   Category,
   CourseEntry,
-} from "@/lib/electron/parsers/Curriculum.parser";
+} from "@/lib/electron-utils/parsers/Curriculum.parser";
 import { getAuthTokens } from "../auth/StoreAuth.service";
 import {
   handleAuthErrorAndRetry,

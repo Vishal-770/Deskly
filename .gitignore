@@ -43,3 +43,6 @@ next-env.d.ts
 dist/
 # electron build
 dist-electron/
+# compiled js files in lib and types
+lib/**/*.js
+types/**/*.js

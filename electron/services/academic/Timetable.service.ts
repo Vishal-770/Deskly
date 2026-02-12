@@ -1,10 +1,10 @@
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import { getAuthTokens, getSemesterInfo } from "../auth/StoreAuth.service";
 import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
-import { extractSemesters } from "@/lib/electron/parsers/SemesterParser";
+import { extractSemesters } from "@/lib/electron-utils/parsers/SemesterParser";
 import { Semester } from "@/types/electron/Semster.types";
-import { parseTimetableCourses } from "@/lib/electron/parsers/TimeTableParser";
-import { generateWeeklySchedule } from "@/lib/electron/FormatTimetable";
+import { parseTimetableCourses } from "@/lib/electron-utils/parsers/TimeTableParser";
+import { generateWeeklySchedule } from "@/lib/electron-utils/FormatTimetable";
 import { WeeklySchedule } from "@/types/electron/TimeTable.types";
 import { CourseDetails } from "@/types/electron/Course.types";
 export async function getSemesters(): Promise<{

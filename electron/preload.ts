@@ -1,18 +1,18 @@
-import { StudentHistoryData } from "@/lib/electron/parsers/GradeHtmlParser.parser";
+import { StudentHistoryData } from "@/lib/electron-utils/parsers/GradeHtmlParser.parser";
 import { Semester } from "@/types/electron/Semster.types";
-import { AttendanceRecord } from "@/lib/electron/parsers/ParseAttendance";
+import { AttendanceRecord } from "@/lib/electron-utils/parsers/ParseAttendance";
 import { CourseDetails } from "@/types/electron/Course.types";
 import { WeeklySchedule } from "@/types/electron/TimeTable.types";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
-import { ImportantProfileData } from "@/lib/electron/ParseProfileInfo";
+import { ImportantProfileData } from "@/lib/electron-utils/ParseProfileInfo";
 import { Category } from "@/types/electron/curriculum.types";
-import { CourseEntry } from "@/lib/electron/parsers/Curriculum.parser";
+import { CourseEntry } from "@/lib/electron-utils/parsers/Curriculum.parser";
 import { ContactInfoResponse } from "@/types/electron/contactInfo.types";
-import { AttendanceRecord as DetailRecord } from "@/lib/electron/parsers/ParseAttendanceDetails.parser";
+import { AttendanceRecord as DetailRecord } from "@/lib/electron-utils/parsers/ParseAttendanceDetails.parser";
 import * as electron from "electron";
 import type { UpdateInfo } from "builder-util-runtime";
 import { LaundaryEntry } from "@/types/electron/Laundary.types";
-import { FeedbackStatus } from "@/lib/electron/parsers/ParseFeedbackInfo";
+import { FeedbackStatus } from "@/lib/electron-utils/parsers/ParseFeedbackInfo";
 import {
   MessMenuResponse,
   MessType,
@@ -127,6 +127,22 @@ electron.contextBridge.exposeInMainWorld("content", {
   }> => electron.ipcRenderer.invoke("userImage:fetch"),
 });
 
+electron.contextBridge.exposeInMainWorld("paymentReceipts", {
+  fetch: (): Promise<{
+    success: boolean;
+    data?: Array<{
+      receiptNumber: string;
+      date: string;
+      amount: number;
+      campusCode: string;
+      receiptId: string;
+      applNo: string;
+      regNo: string;
+    }>;
+    error?: string;
+  }> => electron.ipcRenderer.invoke("paymentReceipts:fetch"),
+});
+
 electron.contextBridge.exposeInMainWorld("profile", {
   get: (
     cookies: string,
@@ -182,7 +198,7 @@ electron.contextBridge.exposeInMainWorld("academicCalendar", {
     calDate: string,
   ): Promise<{
     success: boolean;
-    data?: import("@/lib/electron/parsers/AcademicCalendar.parser").MonthlySchedule;
+    data?: import("@/lib/electron-utils/parsers/AcademicCalendar.parser").MonthlySchedule;
     error?: string;
   }> => electron.ipcRenderer.invoke("academicCalendar:getView", calDate),
 });

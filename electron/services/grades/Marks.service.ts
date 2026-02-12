@@ -1,7 +1,7 @@
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import { getAuthTokens } from "../auth/StoreAuth.service";
 import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
-import { parseStudentMarks } from "@/lib/electron/parsers/MarksParser.parser";
+import { parseStudentMarks } from "@/lib/electron-utils/parsers/MarksParser.parser";
 import { StudentMarkEntry } from "@/types/electron/marks.types";
 
 export async function getStudentMarkView(semesterSubId: string): Promise<{

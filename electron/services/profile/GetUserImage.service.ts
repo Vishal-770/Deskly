@@ -1,4 +1,4 @@
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import { getAuthTokens } from "../auth/StoreAuth.service";
 import {
   handleAuthErrorAndRetry,

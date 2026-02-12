@@ -11,15 +11,16 @@ import {
   Settings,
   User,
   Calendar,
-  CheckCircle,
-  Award,
-  FileText,
+  UserCheck,
+  Target,
+  ScrollText,
   Phone,
-  CalendarDays,
+  Clock,
   Search,
-  Home,
+  LayoutDashboard,
   Shirt,
   ChefHat,
+  Receipt,
 } from "lucide-react";
 import Fuse from "fuse.js";
 import { useAuth } from "./useAuth";
@@ -36,6 +37,7 @@ const DashboardSidebar = () => {
     label: string;
     href: string;
     icon: React.ReactNode;
+    description: string;
   };
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -57,62 +59,80 @@ const DashboardSidebar = () => {
       {
         label: "Dashboard",
         href: "/dashboard",
-        icon: <Home className="w-5 h-5" />,
+        icon: <LayoutDashboard className="w-5 h-5" />,
+        description: "Overview of your academic progress and quick stats",
       },
       {
         label: "Courses",
         href: "/dashboard/courses",
         icon: <BookOpen className="w-5 h-5" />,
+        description: "View and manage your enrolled courses",
       },
       {
         label: "Timetable",
         href: "/dashboard/timetable",
-        icon: <Calendar className="w-5 h-5" />,
+        icon: <Clock className="w-5 h-5" />,
+        description: "Check your class schedule and timings",
       },
       {
         label: "Academic Calendar",
         href: "/dashboard/academic-calendar",
-        icon: <CalendarDays className="w-5 h-5" />,
+        icon: <Calendar className="w-5 h-5" />,
+        description: "Important academic dates and events",
       },
       {
         label: "Grades",
         href: "/dashboard/grades",
         icon: <GraduationCap className="w-5 h-5" />,
+        description: "View your semester grades and GPA",
       },
       {
         label: "Attendance",
         href: "/dashboard/attendance",
-        icon: <CheckCircle className="w-5 h-5" />,
+        icon: <UserCheck className="w-5 h-5" />,
+        description: "Track your attendance records",
       },
       {
         label: "Marks",
         href: "/dashboard/marks",
-        icon: <Award className="w-5 h-5" />,
+        icon: <Target className="w-5 h-5" />,
+        description: "Detailed marks for assignments and exams",
       },
       {
         label: "Curriculum",
         href: "/dashboard/curriculum",
-        icon: <FileText className="w-5 h-5" />,
+        icon: <ScrollText className="w-5 h-5" />,
+        description: "Course curriculum and syllabus details",
       },
       {
         label: "Contact",
         href: "/dashboard/contact",
         icon: <Phone className="w-5 h-5" />,
+        description: "Contact information for faculty and staff",
       },
       {
         label: "Laundry",
         href: "/dashboard/laundry",
         icon: <Shirt className="w-5 h-5" />,
+        description: "Laundry service booking and status",
       },
       {
         label: "Mess",
         href: "/dashboard/mess",
         icon: <ChefHat className="w-5 h-5" />,
+        description: "Mess menu and dining information",
+      },
+      {
+        label: "Payment Receipts",
+        href: "/dashboard/payment-receipts",
+        icon: <Receipt className="w-5 h-5" />,
+        description: "View your payment history and receipts",
       },
       {
         label: "Settings",
         href: "/dashboard/settings",
         icon: <Settings className="w-5 h-5" />,
+        description: "App preferences and configuration",
       },
     ],
     [],
@@ -126,6 +146,7 @@ const DashboardSidebar = () => {
         label: "Profile",
         href: "/dashboard/profile",
         icon: <User className="w-5 h-5" />,
+        description: "View and edit your personal information",
       },
     ],
     [navItems],
@@ -194,10 +215,13 @@ const DashboardSidebar = () => {
                 return next;
               })
             }
-            className={`mb-4 p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group w-11 ${searchOpen ? "bg-primary/10 text-primary" : ""}`}
+            className={`mb-4 p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group w-11 ${searchOpen ? "bg-primary/15 text-primary border-l-4 border-primary shadow-sm ring-1 ring-primary/20" : ""}`}
             aria-label="Open Search"
           >
             <Search className="w-5 h-5" />
+            {searchOpen && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-card animate-pulse"></div>
+            )}
           </button>
 
           {/* Render nav items as small icons (sidebar stays compact). */}
@@ -205,13 +229,19 @@ const DashboardSidebar = () => {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group ${pathname === item.href ? "bg-primary/10 text-primary border-l-4 border-primary" : ""}`}
+              className={`relative p-3 rounded-lg transition-all duration-200 hover:bg-muted flex items-center justify-center group ${pathname === item.href ? "bg-primary/15 text-primary border-l-4 border-primary shadow-sm ring-1 ring-primary/20" : ""}`}
             >
               <span className="w-5 h-5 flex items-center justify-center">
                 {item.icon}
               </span>
-              <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                <span className="text-sm font-medium">{item.label}</span>
+              {pathname === item.href && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-card animate-pulse"></div>
+              )}
+              <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 max-w-xs">
+                <div className="text-sm font-medium">{item.label}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {item.description}
+                </div>
               </div>
             </Link>
           ))}
@@ -220,25 +250,32 @@ const DashboardSidebar = () => {
         {/* User Profile Icon at Bottom */}
         {!searchOpen && (
           <Link href="/dashboard/profile" className="mt-auto relative group">
-            <div className="p-2 rounded-lg hover:bg-muted transition-all duration-200 cursor-pointer">
+            <div
+              className={`relative p-2 rounded-lg hover:bg-muted transition-all duration-200 cursor-pointer ${pathname === "/dashboard/profile" ? "bg-primary/10 border-l-4 border-primary" : ""}`}
+            >
               {userImage ? (
                 <Image
                   src={userImage}
                   alt="User"
                   width={32}
                   height={32}
-                  className="rounded-full object-cover"
+                  className={`rounded-full object-cover ${pathname === "/dashboard/profile" ? "ring-2 ring-primary/50" : ""}`}
                 />
               ) : (
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <div
+                  className={`w-8 h-8 bg-primary rounded-full flex items-center justify-center ${pathname === "/dashboard/profile" ? "ring-2 ring-primary/50" : ""}`}
+                >
                   <User className="w-4 h-4 text-primary-foreground" />
                 </div>
               )}
+              {pathname === "/dashboard/profile" && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-card animate-pulse"></div>
+              )}
             </div>
-            <div className="absolute left-full ml-2 bottom-0 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            <div className="absolute left-full ml-2 bottom-0 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 max-w-xs">
               <div className="text-sm font-medium">Profile</div>
-              <div className="text-xs text-muted-foreground">
-                Click to view profile
+              <div className="text-xs text-muted-foreground mt-1">
+                View and edit your personal information
               </div>
             </div>
           </Link>

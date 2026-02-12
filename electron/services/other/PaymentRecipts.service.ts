@@ -1,14 +1,14 @@
 import VTOPClient from "@/lib/electron-utils/AxiosClient";
-import { getAuthTokens } from "../auth/StoreAuth.service";
 import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
+import { getAuthTokens } from "../auth/StoreAuth.service";
 import {
-  parseStudentHistory,
-  StudentHistoryData,
-} from "@/lib/electron-utils/parsers/GradeHtmlParser.parser";
+  parseReceipts,
+  Receipt,
+} from "@/lib/electron-utils/parsers/PaymentRecipts.parser";
 
-export async function getExamGradeView(): Promise<{
+export async function getPaymentReceipts(): Promise<{
   success: boolean;
-  data?: StudentHistoryData;
+  data?: Receipt[];
   error?: string;
 }> {
   try {
@@ -22,24 +22,25 @@ export async function getExamGradeView(): Promise<{
 
     const client = VTOPClient();
 
-    const res = await client.post(
-      "/vtop/examinations/examGradeView/StudentGradeHistory",
+    const receiptsRes = await client.post(
+      "/vtop/p2p/getReceiptsApplno",
       new URLSearchParams({
         verifyMenu: "true",
         authorizedID: tokens.authorizedID,
         _csrf: tokens.csrf,
-        nocache: new Date().getTime().toString(),
+        nocache: "@(new Date().getTime())",
       }),
       {
         headers: {
           Cookie: tokens.cookies,
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
           Referer: "https://vtopcc.vit.ac.in/vtop/content",
+          "X-Requested-With": "XMLHttpRequest",
         },
       },
     );
 
-    const parsedData = parseStudentHistory(res.data);
+    const parsedData = parseReceipts(receiptsRes.data);
 
     return {
       success: true,
@@ -47,9 +48,9 @@ export async function getExamGradeView(): Promise<{
     };
   } catch (err: unknown) {
     try {
-      return await handleAuthErrorAndRetry(err, () => getExamGradeView());
+      return await handleAuthErrorAndRetry(err, () => getPaymentReceipts());
     } catch (handledErr) {
-      console.error("Get exam grade view error:", handledErr);
+      console.error("Error fetching payment receipts:");
       return {
         success: false,
         error:

@@ -1,10 +1,10 @@
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import { getAuthTokens, getSemesterInfo } from "../auth/StoreAuth.service";
 import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
 import {
   parseFeedbackStatus,
   FeedbackStatus,
-} from "@/lib/electron/parsers/ParseFeedbackInfo";
+} from "@/lib/electron-utils/parsers/ParseFeedbackInfo";
 export async function getFeedbackStatus(): Promise<{
   success: boolean;
   data?: FeedbackStatus[];

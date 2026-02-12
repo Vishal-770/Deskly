@@ -1,4 +1,4 @@
-import VTOPClient from "@/lib/electron/AxiosClient";
+import VTOPClient from "@/lib/electron-utils/AxiosClient";
 import { handleAuthErrorAndRetry } from "../system/ErrorHandler.service";
 
 type LogoutResponse = { success: true } | { success: false; error: string };
